@@ -431,7 +431,7 @@ body::after {
   <div class="header">
     <h1>J.A.R.V.I.S</h1>
     <p class="header-sub">Just A Rather Very Intelligent System</p>
-    <div class="badge"><span class="badge-dot"></span>GPT-4o Mini · Multi-API</div>
+    <div class="badge"><span class="badge-dot"></span>GPT-4o Mini  ·  Multi-API</div>
   </div>
 
   <div class="api-section" style="width:100%">
@@ -451,7 +451,7 @@ body::after {
       </div>
 
       <div class="api-card">
-        <div class="api-label"><span class="label-icon">🌤</span> WeatherAPI Key</div>
+        <div class="api-label"><span class="label-icon">🌤</span> WeatherAPI Key <span style="font-size:8px;color:var(--text-dim);margin-left:4px">weatherapi.com · free</span></div>
         <div class="api-row">
           <input type="password" class="api-input" id="weatherKeyInput" placeholder="Your WeatherAPI key..." autocomplete="off" spellcheck="false"/>
           <button class="api-save" onclick="saveWeather()">Connect</button>
@@ -459,148 +459,756 @@ body::after {
         <div class="api-status" id="weatherStatus">Get a free key at weatherapi.com</div>
       </div>
 
+      <div class="api-card">
+        <div class="api-label"><span class="label-icon">📰</span> NewsAPI Key <span style="font-size:8px;color:var(--text-dim);margin-left:4px">newsapi.org · free</span></div>
+        <div class="api-row">
+          <input type="password" class="api-input" id="newsKeyInput" placeholder="Your NewsAPI key..." autocomplete="off" spellcheck="false"/>
+          <button class="api-save" onclick="saveNews()">Connect</button>
+        </div>
+        <div class="api-status" id="newsStatus">Get a free key at newsapi.org</div>
+      </div>
+
+      <div class="api-card spotify-card">
+        <div class="api-label"><span class="label-icon">🎵</span> Spotify Client ID <span style="font-size:8px;color:var(--text-dim);margin-left:4px">developer.spotify.com · free</span></div>
+        <div class="api-row">
+          <input type="text" class="api-input" id="spotifyClientInput" placeholder="Your Spotify Client ID..." autocomplete="off" spellcheck="false"/>
+          <button class="api-save spotify-btn" onclick="connectSpotify()">Auth</button>
+        </div>
+        <div class="api-status" id="spotifyStatus">Create an app at developer.spotify.com, set redirect URI to this page's URL.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="spotify-player" id="spotifyPlayer">
+    <div class="spotify-track-info">
+      <div class="spotify-art" id="spotifyArt">🎵</div>
+      <div class="spotify-meta">
+        <div class="spotify-title" id="spotifyTitle">Nothing playing</div>
+        <div class="spotify-artist" id="spotifyArtist">—</div>
+        <div class="spotify-is-playing" id="spotifyState">● PAUSED</div>
+      </div>
+    </div>
+    <div class="spotify-controls">
+      <button class="sp-btn" onclick="spotifyPrev()">⏮ PREV</button>
+      <button class="sp-btn" onclick="spotifyPlayPause()" id="spPlayBtn">▶ PLAY</button>
+      <button class="sp-btn" onclick="spotifyNext()">⏭ NEXT</button>
     </div>
   </div>
 
   <div class="orb-card" id="orbCard">
     <div class="orb-wrap" id="orbWrap" onclick="toggleListening()">
-      <svg class="orb-svg" viewBox="0 0 200 200">
-        <circle class="ring-outer" cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="0.8" stroke-dasharray="4 8"/>
-        <circle id="orbCore" class="orb-core" cx="100" cy="100" r="52" fill="var(--blue-dim)" opacity="0.6"/>
+      <svg class="orb-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="coreGrad" cx="40%" cy="35%" r="65%">
+            <stop offset="0%"   stop-color="#1a6aaa"/>
+            <stop offset="45%"  stop-color="#0a2a50"/>
+            <stop offset="100%" stop-color="#020810"/>
+          </radialGradient>
+          <linearGradient id="rib1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.9"/>
+            <stop offset="50%"  stop-color="#0070cc" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.1"/>
+          </linearGradient>
+          <linearGradient id="rib2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#7b4fff" stop-opacity="0.8"/>
+            <stop offset="50%"  stop-color="#003080" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#00b4ff" stop-opacity="0.2"/>
+          </linearGradient>
+          <linearGradient id="rib3" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#00b4ff" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#7b4fff" stop-opacity="0.3"/>
+          </linearGradient>
+          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <clipPath id="circleClip"><circle cx="100" cy="100" r="94"/></clipPath>
+        </defs>
+
+        <g class="ring-outer" filter="url(#glow)">
+          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="0.8" stroke-dasharray="4 8"/>
+          <circle cx="100" cy="6"   r="2.5" fill="#00b4ff" opacity="0.8"/>
+          <circle cx="100" cy="194" r="2.5" fill="#00b4ff" opacity="0.8"/>
+          <circle cx="6"   cy="100" r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="194" cy="100" r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="33"  cy="33"  r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="167" cy="33"  r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="167" cy="167" r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="22"  cy="147" r="1.5" fill="#0088cc" opacity="0.6"/>
+        </g>
+        <g class="ring-mid" filter="url(#glow)">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(0,180,255,0.12)" stroke-width="0.6" stroke-dasharray="6 4"/>
+          <line x1="100" y1="20"  x2="100" y2="30"  stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
+          <line x1="180" y1="100" x2="170" y2="100" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
+          <line x1="100" y1="180" x2="100" y2="170" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
+          <line x1="20"  y1="100" x2="30"  y2="100" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
+          <circle cx="100" cy="20"  r="2" fill="#00b4ff" opacity="0.7"/>
+          <circle cx="180" cy="100" r="2" fill="#00b4ff" opacity="0.7"/>
+          <circle cx="100" cy="180" r="2" fill="#00b4ff" opacity="0.7"/>
+          <circle cx="20"  cy="100" r="2" fill="#00b4ff" opacity="0.7"/>
+        </g>
+        <g class="ring-inner">
+          <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(0,200,255,0.08)" stroke-width="0.5" stroke-dasharray="3 6"/>
+        </g>
+        <g clip-path="url(#circleClip)">
+          <g class="ribbon-1" filter="url(#glow)">
+            <path d="M 34 100 C 34 44, 90 18, 140 52 C 172 74, 175 118, 152 142 C 128 168, 78 168, 54 145 C 36 128, 34 114, 34 100 Z"
+              fill="none" stroke="url(#rib1)" stroke-width="3.5" opacity="0.85"/>
+            <path d="M 40 96 C 42 52, 92 28, 138 58 C 166 78, 168 116, 148 138 C 124 164, 80 162, 56 140"
+              fill="none" stroke="url(#rib1)" stroke-width="1.5" opacity="0.5"/>
+          </g>
+          <g class="ribbon-2" filter="url(#glow)">
+            <path d="M 100 34 C 148 34, 170 80, 154 126 C 140 162, 98 176, 62 156 C 32 138, 28 96, 50 70 C 68 48, 86 34, 100 34 Z"
+              fill="none" stroke="url(#rib2)" stroke-width="3" opacity="0.8"/>
+            <path d="M 104 40 C 146 42, 164 84, 150 124 C 136 158, 96 170, 64 152"
+              fill="none" stroke="url(#rib2)" stroke-width="1.2" opacity="0.45"/>
+          </g>
+          <g class="ribbon-3" filter="url(#glow)">
+            <path d="M 68 42 C 102 26, 152 44, 164 88 C 174 126, 150 166, 112 172 C 74 178, 38 150, 34 112 C 30 76, 46 54, 68 42 Z"
+              fill="none" stroke="url(#rib3)" stroke-width="2" opacity="0.6"/>
+          </g>
+        </g>
+        <g class="orb-core" filter="url(#glow-strong)">
+          <circle cx="100" cy="100" r="52" fill="url(#coreGrad)"/>
+          <circle cx="100" cy="100" r="52" fill="none" stroke="rgba(0,200,255,0.35)" stroke-width="1.2"/>
+          <ellipse cx="86" cy="82" rx="14" ry="9" fill="rgba(255,255,255,0.07)" transform="rotate(-25 86 82)"/>
+          <line x1="82"  y1="100" x2="118" y2="100" stroke="rgba(0,200,255,0.25)" stroke-width="0.8"/>
+          <line x1="100" y1="80"  x2="100" y2="120" stroke="rgba(0,200,255,0.25)" stroke-width="0.8"/>
+          <line x1="86"  y1="86"  x2="114" y2="114" stroke="rgba(0,200,255,0.15)" stroke-width="0.6"/>
+          <line x1="114" y1="86"  x2="86"  y2="114" stroke="rgba(0,200,255,0.15)" stroke-width="0.6"/>
+          <circle cx="100" cy="100" r="4" fill="#00e5ff" opacity="0.7"/>
+          <circle cx="100" cy="100" r="2" fill="#ffffff" opacity="0.5"/>
+        </g>
+        <circle id="glowRing" cx="100" cy="100" r="94" fill="none"
+          stroke="rgba(0,180,255,0)" stroke-width="3" filter="url(#glow-strong)"
+          style="transition: stroke 0.4s"/>
       </svg>
     </div>
-    <div class="status-pill" id="statusBar">SYSTEM IDLE — TAP TO ACTIVATE</div>
+
+    <div class="status-pill" id="statusBar">
+      <span class="status-indicator"></span>
+      SYSTEM IDLE — TAP TO ACTIVATE
+    </div>
+
+    <div class="waveform" id="waveform">
+      <div class="wave-bar" style="animation-delay:0s"></div>
+      <div class="wave-bar" style="animation-delay:0.07s"></div>
+      <div class="wave-bar" style="animation-delay:0.14s"></div>
+      <div class="wave-bar" style="animation-delay:0.21s"></div>
+      <div class="wave-bar" style="animation-delay:0.28s"></div>
+      <div class="wave-bar" style="animation-delay:0.35s"></div>
+      <div class="wave-bar" style="animation-delay:0.28s"></div>
+      <div class="wave-bar" style="animation-delay:0.21s"></div>
+      <div class="wave-bar" style="animation-delay:0.14s"></div>
+      <div class="wave-bar" style="animation-delay:0.07s"></div>
+      <div class="wave-bar" style="animation-delay:0s"></div>
+    </div>
+
+    <p class="wake-hint">Say <span>"Hey Jarvis"</span> to wake</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="startBtn" onclick="toggleListening()">Activate</button>
+    <button class="btn danger" id="stopBtn" onclick="stopAll()" disabled>Deactivate</button>
+    <button class="btn secondary" onclick="clearLog()">Clear</button>
   </div>
 
   <div class="log-card">
     <div class="log-card-header">
       <div class="log-live"><span class="live-dot" id="liveDot"></span>SESSION LOG</div>
+      <span id="logCount">0 ENTRIES</span>
     </div>
     <div class="log-body" id="logBody">
-      <div class="log-entry system"><span class="log-role">SYS</span><span class="log-text">System ready. Connect keys above.</span></div>
+      <div class="log-entry system">
+        <span class="log-role">SYS</span>
+        <span class="log-text">Connect your API keys above, then tap Activate or say "Hey Jarvis".</span>
+      </div>
     </div>
   </div>
 
-  <div class="controls">
-    <button class="btn" id="startBtn" onclick="toggleListening()">Activate</button>
-    <button class="btn danger" onclick="stopAll()">Deactivate</button>
+  <div class="cheat-card">
+    <div class="cheat-title">⚡ Voice Commands</div>
+    <div class="cheat-grid">
+      <div class="cheat-item"><div class="cheat-cmd">"weather [city]"</div><div class="cheat-desc">Current conditions</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"will it rain"</div><div class="cheat-desc">Rain forecast check</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"play music" / "pause"</div><div class="cheat-desc">Spotify control</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"next song" / "previous"</div><div class="cheat-desc">Skip tracks</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"volume up/down"</div><div class="cheat-desc">Adjust volume</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"what's playing"</div><div class="cheat-desc">Current track</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"news" / "headlines"</div><div class="cheat-desc">Top stories</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"tell me a joke"</div><div class="cheat-desc">Random joke</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"set timer [N] minutes"</div><div class="cheat-desc">Countdown timer</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"open [site]"</div><div class="cheat-desc">Launch website</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">"what time is it"</div><div class="cheat-desc">Current time/date</div></div>
+      <div class="cheat-item"><div class="cheat-cmd">Anything else</div><div class="cheat-desc">GPT-4o answers</div></div>
+    </div>
   </div>
 
 </div>
 
 <script>
-let OPENAI_KEY = '';
-let WEATHER_KEY = '';
-let userLocation = 'Charlotte';
+// ── State ────────────────────────────────────────────────────────────────
+let OPENAI_KEY   = '';
+let WEATHER_KEY  = '';
+let NEWS_KEY     = '';
+let SPOTIFY_CLIENT_ID = '';
+let SPOTIFY_TOKEN = '';
+let SPOTIFY_REFRESH = '';
+let userLocation = 'Charlotte, North Carolina'; // default, auto-detected below
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null, isActive = false, isSpeaking = false;
+let recognition = null, isActive = false, isAwake = false, isSpeaking = false;
+let logEntries = 0, silenceTimer = null, currentUtterance = null;
+
+const orbWrap   = document.getElementById('orbWrap');
+const orbCard   = document.getElementById('orbCard');
+const glowRing  = document.getElementById('glowRing');
+const statusBar = document.getElementById('statusBar');
+const waveform  = document.getElementById('waveform');
+const logBody   = document.getElementById('logBody');
+const liveDot   = document.getElementById('liveDot');
+const logCount  = document.getElementById('logCount');
+const startBtn  = document.getElementById('startBtn');
+const stopBtn   = document.getElementById('stopBtn');
+
+// ── UI Helpers ───────────────────────────────────────────────────────────
+function toggleApiSection() {
+  const container = document.getElementById('apiCardsContainer');
+  const arrow = document.getElementById('apiArrow');
+  container.classList.toggle('hidden');
+  arrow.classList.toggle('open');
+}
+
+function setOrbState(state) {
+  orbWrap.className  = 'orb-wrap'  + (state ? ' ' + state : '');
+  orbCard.className  = 'orb-card'  + (state ? ' state-' + state : '');
+  waveform.className = 'waveform'  + (state ? ' ' + state : '');
+  const colors = { listening:'rgba(0,210,255,0.7)', speaking:'rgba(255,159,64,0.65)', active:'rgba(0,229,160,0.4)' };
+  glowRing.setAttribute('stroke', colors[state] || 'rgba(0,180,255,0)');
+}
+
+function setStatus(msg, cls) {
+  statusBar.innerHTML = '<span class="status-indicator"></span>' + msg;
+  statusBar.className = 'status-pill' + (cls ? ' ' + cls : '');
+}
 
 function addLog(role, text) {
   const e = document.createElement('div');
   e.className = 'log-entry ' + role;
   const label = role === 'user' ? 'YOU' : role === 'jarvis' ? 'JRVIS' : 'SYS';
   e.innerHTML = '<span class="log-role">' + label + '</span><span class="log-text">' + text + '</span>';
-  document.getElementById('logBody').appendChild(e);
-  document.getElementById('logBody').scrollTop = document.getElementById('logBody').scrollHeight;
+  logBody.appendChild(e);
+  logBody.scrollTop = logBody.scrollHeight;
+  logEntries++;
+  logCount.textContent = logEntries + ' ENTR' + (logEntries === 1 ? 'Y' : 'IES');
 }
 
+function clearLog() { logBody.innerHTML=''; logEntries=0; logCount.textContent='0 ENTRIES'; }
+
+// ── API Key Management ───────────────────────────────────────────────────
 function saveOpenAI() {
-  OPENAI_KEY = document.getElementById('apiKeyInput').value.trim();
-  document.getElementById('openaiStatus').textContent = '✓ Connected';
-  addLog('system', 'OpenAI neural core online.');
+  const val = document.getElementById('apiKeyInput').value.trim();
+  const statusEl = document.getElementById('openaiStatus');
+  if (!val.startsWith('sk-') || val.length < 20) {
+    statusEl.textContent = '✗ Invalid key. Must start with sk-'; statusEl.className='api-status err'; return;
+  }
+  OPENAI_KEY = val;
+  statusEl.textContent = '✓ OpenAI connected — Jarvis is ready.'; statusEl.className='api-status ok';
+  document.getElementById('apiKeyInput').value = val.slice(0,7)+'••••••••••'+val.slice(-4);
+  addLog('system','OpenAI key connected.');
 }
+document.getElementById('apiKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveOpenAI(); });
 
 function saveWeather() {
-  WEATHER_KEY = document.getElementById('weatherKeyInput').value.trim();
-  document.getElementById('weatherStatus').textContent = '✓ Connected';
-  addLog('system', 'Weather systems online.');
+  const val = document.getElementById('weatherKeyInput').value.trim();
+  const statusEl = document.getElementById('weatherStatus');
+  if (!val || val.length < 10) { statusEl.textContent='✗ Invalid key'; statusEl.className='api-status err'; return; }
+  WEATHER_KEY = val;
+  statusEl.textContent = '✓ WeatherAPI connected.'; statusEl.className='api-status ok';
+  document.getElementById('weatherKeyInput').value = val.slice(0,4)+'••••••••'+val.slice(-4);
+  addLog('system','WeatherAPI connected. Auto-detecting your location…');
+  autoDetectLocation();
+}
+document.getElementById('weatherKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveWeather(); });
+
+function saveNews() {
+  const val = document.getElementById('newsKeyInput').value.trim();
+  const statusEl = document.getElementById('newsStatus');
+  if (!val || val.length < 10) { statusEl.textContent='✗ Invalid key'; statusEl.className='api-status err'; return; }
+  NEWS_KEY = val;
+  statusEl.textContent = '✓ NewsAPI connected.'; statusEl.className='api-status ok';
+  document.getElementById('newsKeyInput').value = val.slice(0,4)+'••••••••'+val.slice(-4);
+  addLog('system','NewsAPI connected. Say "Hey Jarvis, what\'s the news?"');
+}
+document.getElementById('newsKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveNews(); });
+
+// ── IP-based Location Auto-detection ────────────────────────────────────
+async function autoDetectLocation() {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    if (data.city) {
+      userLocation = data.city + ', ' + (data.region || data.country_name);
+      addLog('system', 'Location detected: ' + userLocation);
+    }
+  } catch(e) { /* silent fail, use default */ }
 }
 
+// Also try on page load (no key needed for ip api)
+autoDetectLocation();
+
+// ── Spotify OAuth PKCE ───────────────────────────────────────────────────
+function generateCodeVerifier(length=128) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  let result = '';
+  const arr = new Uint8Array(length);
+  window.crypto.getRandomValues(arr);
+  arr.forEach(b => result += chars[b % chars.length]);
+  return result;
+}
+
+async function generateCodeChallenge(verifier) {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function connectSpotify() {
+  const clientId = document.getElementById('spotifyClientInput').value.trim();
+  if (!clientId || clientId.length < 10) {
+    document.getElementById('spotifyStatus').textContent = '✗ Enter a valid Spotify Client ID';
+    document.getElementById('spotifyStatus').className = 'api-status err';
+    return;
+  }
+  SPOTIFY_CLIENT_ID = clientId;
+  localStorage.setItem('jarvis_spotify_client_id', clientId);
+
+  const verifier = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  localStorage.setItem('spotify_code_verifier', verifier);
+
+  const redirectUri = window.location.href.split('?')[0].split('#')[0];
+  const scopes = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
+  const params = new URLSearchParams({
+    client_id: clientId,
+    response_type: 'code',
+    redirect_uri: redirectUri,
+    code_challenge_method: 'S256',
+    code_challenge: challenge,
+    scope: scopes
+  });
+
+  window.location = 'https://accounts.spotify.com/authorize?' + params.toString();
+}
+
+async function handleSpotifyCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (!code) return;
+
+  // Clean URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  const clientId = localStorage.getItem('jarvis_spotify_client_id');
+  const verifier = localStorage.getItem('spotify_code_verifier');
+  const redirectUri = window.location.href.split('?')[0];
+
+  if (!clientId || !verifier) { addLog('system','Spotify auth error: missing state.'); return; }
+
+  SPOTIFY_CLIENT_ID = clientId;
+  document.getElementById('spotifyClientInput').value = clientId.slice(0,4) + '••••' + clientId.slice(-4);
+
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        code_verifier: verifier
+      })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      SPOTIFY_TOKEN = data.access_token;
+      localStorage.setItem('spotify_token', SPOTIFY_TOKEN);
+      localStorage.setItem('spotify_token_expiry', Date.now() + data.expires_in * 1000);
+      document.getElementById('spotifyStatus').textContent = '✓ Spotify connected!';
+      document.getElementById('spotifyStatus').className = 'api-status spotify-ok';
+      addLog('system','Spotify connected. Voice-control your music!');
+      document.getElementById('spotifyPlayer').classList.add('visible');
+      refreshSpotifyStatus();
+      setInterval(refreshSpotifyStatus, 10000);
+    } else {
+      document.getElementById('spotifyStatus').textContent = '✗ Auth failed: ' + (data.error_description || data.error);
+      document.getElementById('spotifyStatus').className = 'api-status err';
+    }
+  } catch(e) {
+    document.getElementById('spotifyStatus').textContent = '✗ Network error';
+    document.getElementById('spotifyStatus').className = 'api-status err';
+  }
+  localStorage.removeItem('spotify_code_verifier');
+}
+
+async function spotifyFetch(endpoint, method='GET', body=null) {
+  if (!SPOTIFY_TOKEN) return null;
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + SPOTIFY_TOKEN } };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  try {
+    const res = await fetch('https://api.spotify.com/v1' + endpoint, opts);
+    if (res.status === 401) { SPOTIFY_TOKEN = ''; addLog('system','Spotify session expired. Please re-authenticate.'); return null; }
+    if (res.status === 204 || res.status === 202) return {};
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function refreshSpotifyStatus() {
+  const data = await spotifyFetch('/me/player/currently-playing');
+  if (!data || !data.item) return;
+  updateSpotifyUI(data);
+}
+
+function updateSpotifyUI(data) {
+  if (!data || !data.item) return;
+  const track = data.item;
+  document.getElementById('spotifyTitle').textContent = track.name;
+  document.getElementById('spotifyArtist').textContent = track.artists.map(a=>a.name).join(', ');
+  document.getElementById('spotifyState').textContent = data.is_playing ? '▶ PLAYING' : '■ PAUSED';
+  document.getElementById('spPlayBtn').textContent = data.is_playing ? '⏸ PAUSE' : '▶ PLAY';
+  const art = document.getElementById('spotifyArt');
+  const img = track.album?.images?.[0]?.url;
+  if (img) art.innerHTML = '<img src="' + img + '" alt="album art">';
+}
+
+async function spotifyPlayPause() {
+  const data = await spotifyFetch('/me/player/currently-playing');
+  if (data && data.is_playing) {
+    await spotifyFetch('/me/player/pause', 'PUT');
+    document.getElementById('spotifyState').textContent = '■ PAUSED';
+    document.getElementById('spPlayBtn').textContent = '▶ PLAY';
+  } else {
+    await spotifyFetch('/me/player/play', 'PUT');
+    document.getElementById('spotifyState').textContent = '▶ PLAYING';
+    document.getElementById('spPlayBtn').textContent = '⏸ PAUSE';
+  }
+}
+
+async function spotifyNext() {
+  await spotifyFetch('/me/player/next', 'POST');
+  setTimeout(refreshSpotifyStatus, 800);
+}
+
+async function spotifyPrev() {
+  await spotifyFetch('/me/player/previous', 'POST');
+  setTimeout(refreshSpotifyStatus, 800);
+}
+
+async function spotifySetVolume(pct) {
+  pct = Math.max(0, Math.min(100, pct));
+  await spotifyFetch('/me/player/volume?volume_percent=' + pct, 'PUT');
+}
+
+async function getCurrentVolume() {
+  const data = await spotifyFetch('/me/player');
+  return data?.device?.volume_percent ?? 50;
+}
+
+// ── Speech Control ───────────────────────────────────────────────────────
 function toggleListening() {
+  if (!SpeechRecognition) { addLog('system','Speech recognition not supported. Use Chrome or Edge.'); return; }
+  if (!OPENAI_KEY) { addLog('system','Please connect your OpenAI API key first.'); return; }
   isActive ? stopAll() : startListening();
 }
 
 function startListening() {
-  isActive = true;
-  recognition = new SpeechRecognition();
-  recognition.onstart = () => {
-    document.getElementById('statusBar').textContent = "LISTENING...";
-    document.getElementById('liveDot').classList.add('on');
-  };
-  recognition.onresult = e => {
-    const text = e.results[0][0].transcript;
-    addLog('user', text);
-    routeCommand(text.toLowerCase(), text);
-  };
-  recognition.onend = () => { if(isActive && !isSpeaking) recognition.start(); };
-  recognition.start();
+  isActive=true; isAwake=false;
+  startBtn.disabled=true; stopBtn.disabled=false; startBtn.textContent='Active';
+  setOrbState('active');
+  setStatus('LISTENING FOR WAKE WORD','active');
+  addLog('system','System online. Listening for "Hey Jarvis"…');
+  liveDot.className='live-dot on';
+  startRecognition();
 }
 
 function stopAll() {
-  isActive = false;
-  if(recognition) recognition.stop();
-  window.speechSynthesis.cancel();
-  document.getElementById('statusBar').textContent = "SYSTEM IDLE";
-  document.getElementById('liveDot').classList.remove('on');
+  isActive=false; isAwake=false; isSpeaking=false;
+  if (recognition){try{recognition.stop();}catch(e){} recognition=null;}
+  if (currentUtterance){window.speechSynthesis.cancel(); currentUtterance=null;}
+  if (silenceTimer){clearTimeout(silenceTimer); silenceTimer=null;}
+  startBtn.disabled=false; stopBtn.disabled=true; startBtn.textContent='Activate';
+  setOrbState('');
+  setStatus('SYSTEM IDLE — TAP TO ACTIVATE');
+  addLog('system','System deactivated.');
+  liveDot.className='live-dot';
 }
 
-async function routeCommand(lower, original) {
-  if (lower.includes('time')) {
-    speak("It is " + new Date().toLocaleTimeString() + ", sir.");
+function startRecognition() {
+  if (!isActive) return;
+  if (recognition){try{recognition.stop();}catch(e){}}
+  recognition = new SpeechRecognition();
+  recognition.continuous=true;
+  recognition.interimResults=false; recognition.lang='en-US';
+  recognition.onresult = e => handleTranscript(e.results[e.results.length-1][0].transcript.trim());
+  recognition.onerror = e => {
+    if (e.error==='not-allowed'){addLog('system','Mic access denied.'); setStatus('MIC DENIED','error'); stopAll();}
+  };
+  try{recognition.start();}catch(e){}
+}
+
+function handleTranscript(text) {
+  if (!isActive) return;
+  const lower = text.toLowerCase();
+  const wakeWords = ['hey jarvis','jarvis','ok jarvis','hi jarvis','hello jarvis'];
+
+  if (!isAwake) {
+    if (wakeWords.some(p=>lower.includes(p))) {
+      isAwake=true;
+      setOrbState('listening');
+      setStatus('JARVIS AWAKENED — LISTENING…','listening');
+      addLog('system','Wake word detected.');
+      speak("Yes, I'm listening.");
+      silenceTimer = setTimeout(()=>{
+        if (isAwake && isActive){isAwake=false; setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active'); addLog('system','Timed out.');}
+      }, 8000);
+    }
     return;
   }
-  
-  // Default to OpenAI for all other questions
-  if (OPENAI_KEY) {
-    await askOpenAI(original);
-  } else {
-    speak("I require an OpenAI key for general queries, sir.");
+  if (silenceTimer){clearTimeout(silenceTimer); silenceTimer=null;}
+  isAwake=false;
+  addLog('user', text);
+  setStatus('PROCESSING…','active');
+  routeCommand(lower, text);
+}
+
+// ── Command Router ───────────────────────────────────────────────────────
+async function routeCommand(lower, original) {
+
+  // TIME & DATE
+  if (lower.includes('what time') || lower.includes('current time') || lower.match(/^(time|date)$/)) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit',hour12:true});
+    const dateStr = now.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric'});
+    const reply = `It is ${timeStr} on ${dateStr}, sir.`;
+    addLog('jarvis', reply); speak(reply); return;
+  }
+
+  // WEATHER
+  if (lower.includes('weather') || lower.includes('temperature') || lower.includes('forecast') ||
+      lower.includes('will it rain') || lower.includes('is it raining') || lower.includes('how hot') || lower.includes('how cold')) {
+    let loc = extractLocation(lower) || userLocation;
+    await getWeather(loc, lower); return;
+  }
+
+  // SPOTIFY - playback control
+  if (SPOTIFY_TOKEN) {
+    if (lower.match(/\b(play music|resume|resume music|start playing)\b/)) { await spotifyFetch('/me/player/play','PUT'); speak('Playing now, sir.'); refreshSpotifyStatus(); return; }
+    if (lower.match(/\b(pause|pause music|stop music|stop playing)\b/)) { await spotifyFetch('/me/player/pause','PUT'); speak('Music paused, sir.'); return; }
+    if (lower.match(/\b(next song|next track|skip|skip song)\b/)) { await spotifyNext(); speak('Skipping to next track, sir.'); return; }
+    if (lower.match(/\b(previous song|previous track|go back|last song)\b/)) { await spotifyPrev(); speak('Going back, sir.'); return; }
+    if (lower.match(/\b(volume up|turn it up|louder)\b/)) { const v = await getCurrentVolume(); await spotifySetVolume(v+15); speak('Volume increased, sir.'); return; }
+    if (lower.match(/\b(volume down|turn it down|quieter|lower the volume)\b/)) { const v = await getCurrentVolume(); await spotifySetVolume(v-15); speak('Volume decreased, sir.'); return; }
+    if (lower.match(/\bvolume\s+(\d+)/)) { const m = lower.match(/\bvolume\s+(\d+)/); await spotifySetVolume(parseInt(m[1])); speak(`Volume set to ${m[1]}%, sir.`); return; }
+    if (lower.match(/\b(what(?:'s| is) playing|current(?:ly playing)? song|now playing)\b/)) {
+      const d = await spotifyFetch('/me/player/currently-playing');
+      if (d && d.item) { const reply = `Currently playing ${d.item.name} by ${d.item.artists[0].name}.`; addLog('jarvis',reply); speak(reply); } 
+      else { speak("Nothing seems to be playing right now, sir."); }
+      return;
+    }
+  }
+
+  // NEWS
+  if (lower.match(/\b(news|headlines|latest news|what(?:'s| is) happening)\b/)) {
+    await getNews(); return;
+  }
+
+  // JOKE
+  if (lower.match(/\b(joke|tell me a joke|make me laugh|something funny)\b/)) {
+    await getJoke(); return;
+  }
+
+  // TIMER
+  const timerMatch = lower.match(/(\d+)\s*(?:minute|min)/);
+  if (lower.includes('timer') && timerMatch) { startTimer(parseInt(timerMatch[1])); return; }
+
+  // WEBSITES
+  const siteMap = { youtube:'https://youtube.com', spotify:'https://open.spotify.com', google:'https://google.com', netflix:'https://netflix.com', github:'https://github.com', twitter:'https://twitter.com', reddit:'https://reddit.com' };
+  for (const [name, url] of Object.entries(siteMap)) {
+    if (lower.includes('open ' + name)) { window.open(url,'_blank'); speak('Opening ' + name + ', sir.'); return; }
+  }
+
+  // FALLBACK → GPT
+  await askOpenAI(original);
+}
+
+// Extract location from speech (e.g. "weather in Dallas" → "Dallas")
+function extractLocation(lower) {
+  const match = lower.match(/(?:weather|temperature|forecast)\s+(?:in|for|at)\s+([a-z\s,]+?)(?:\s|$)/i);
+  return match ? match[1].trim() : null;
+}
+
+// ── Feature Functions ────────────────────────────────────────────────────
+
+// Weather — with AI-powered summary via OpenAI
+async function getWeather(location, originalQuery='weather') {
+  if (!WEATHER_KEY) { speak('My weather sensors are not configured, sir. Please add a WeatherAPI key.'); return; }
+  try {
+    setStatus('CHECKING WEATHER…', 'active');
+    const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_KEY}&q=${encodeURIComponent(location)}&days=1&aqi=no`);
+    const data = await res.json();
+    if (data.error) { speak('I could not retrieve the weather for that location, sir.'); return; }
+
+    const current = data.current;
+    const forecast = data.forecast.forecastday[0];
+    const weatherContext = `Location: ${data.location.name}, ${data.location.region}
+Temp: ${current.temp_f}°F (feels like ${current.feelslike_f}°F)
+Condition: ${current.condition.text}
+Humidity: ${current.humidity}%
+Wind: ${current.wind_mph} mph ${current.wind_dir}
+UV Index: ${current.uv}
+Today's High: ${forecast.day.maxtemp_f}°F, Low: ${forecast.day.mintemp_f}°F
+Chance of rain: ${forecast.day.daily_chance_of_rain}%
+Sunrise: ${forecast.astro.sunrise}, Sunset: ${forecast.astro.sunset}
+User asked: "${originalQuery}"`;
+
+    // AI-powered natural weather response
+    const aiReply = await askOpenAIRaw(
+      `You are J.A.R.V.I.S., Tony Stark's AI. Based on this weather data, give a natural, concise, slightly witty 1-2 sentence weather report. Answer the specific question if there is one. Call the user sir.\n\n${weatherContext}`
+    );
+    addLog('jarvis', aiReply);
+    speak(aiReply);
+  } catch(err) {
+    addLog('system','Weather error: '+err.message);
+    speak('Weather systems are offline, sir.');
   }
 }
 
+// Timer
+function startTimer(minutes) {
+  const ms = minutes * 60 * 1000;
+  addLog('system', `Timer started for ${minutes} minutes.`);
+  speak(`Timer set for ${minutes} minutes, sir.`);
+  setTimeout(() => { speak(`Sir, your ${minutes} minute timer is complete.`); }, ms);
+}
+
+// News
+async function getNews() {
+  if (!NEWS_KEY) { speak("My news feed isn't configured, sir. Please connect a NewsAPI key."); return; }
+  try {
+    setStatus('FETCHING NEWS…', 'active');
+    const res = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
+    const data = await res.json();
+    if (!data.articles || data.articles.length === 0) { speak("I couldn't pull the headlines right now, sir."); return; }
+    const headlines = data.articles.slice(0,4).map(a => a.title).join('. Next: ');
+    const aiReply = await askOpenAIRaw(
+      `You are J.A.R.V.I.S. Summarize these news headlines in 2-3 sentences in your characteristic intelligent, concise style. Call the user sir.\n\nHeadlines: ${headlines}`
+    );
+    addLog('jarvis', aiReply);
+    speak(aiReply);
+  } catch(err) {
+    speak('The news feed appears to be down, sir.');
+  }
+}
+
+// Joke (JokeAPI — completely free, no key needed)
+async function getJoke() {
+  try {
+    setStatus('FETCHING JOKE…', 'active');
+    const res = await fetch('https://v2.jokeapi.dev/joke/Any?safe-mode&type=twopart');
+    const data = await res.json();
+    if (data.setup && data.delivery) {
+      addLog('jarvis', data.setup + ' ... ' + data.delivery);
+      speak(data.setup);
+      setTimeout(() => speak(data.delivery), 3000);
+    } else {
+      speak("My humor subroutines appear to be malfunctioning, sir.");
+    }
+  } catch(e) {
+    speak("I attempted humor, but something went wrong. Not unlike most of my social interactions, sir.");
+  }
+}
+
+// ── OpenAI ───────────────────────────────────────────────────────────────
 async function askOpenAIRaw(prompt) {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+OPENAI_KEY },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [{role: 'system', content: "You are JARVIS. Concise and intelligent."}, {role: 'user', content: prompt}]
+      model: 'gpt-4o-mini', max_tokens: 200,
+      messages: [
+        { role:'system', content:"You are J.A.R.V.I.S., Tony Stark's AI. Intelligent, calm, slightly sarcastic, concise. Occasionally call the user sir." },
+        { role:'user', content: prompt }
+      ]
     })
   });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error?.message || `HTTP ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error('HTTP '+res.status);
   const data = await res.json();
-  return data.choices[0].message.content;
+  const text = data.choices?.[0]?.message?.content || '';
+  return text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#+\s/g,'').trim();
 }
 
 async function askOpenAI(prompt) {
   try {
-    const reply = await askOpenAIRaw(prompt);
-    addLog('jarvis', reply);
-    speak(reply);
+    const clean = await askOpenAIRaw(prompt);
+    addLog('jarvis', clean);
+    speak(clean);
   } catch(err) {
-    addLog('system', 'Neural Link Error: ' + err.message);
-    speak("I am having trouble connecting to my brain, sir. " + err.message);
+    addLog('system','Error: '+err.message);
+    speak('I encountered an error, sir.');
+    setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active');
   }
 }
 
+// ── TTS ──────────────────────────────────────────────────────────────────
 function speak(text) {
-  isSpeaking = true;
-  if(recognition) recognition.stop();
-  const u = new SpeechSynthesisUtterance(text);
-  u.onend = () => { isSpeaking = false; if(isActive) recognition.start(); };
-  window.speechSynthesis.speak(u);
+  if (!window.speechSynthesis){addLog('system','TTS not supported.'); return;}
+  window.speechSynthesis.cancel();
+  isSpeaking=true;
+  if (recognition){try{recognition.stop();}catch(e){}}
+  setOrbState('speaking');
+  setStatus('JARVIS SPEAKING…','speaking');
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.rate=0.95; currentUtterance.pitch=0.85; currentUtterance.volume=1;
+  const voices = window.speechSynthesis.getVoices();
+  const pref = voices.find(v=>v.name.includes('Daniel')||v.name.includes('Google UK English Male')||v.name.includes('Microsoft David'));
+  if (pref) currentUtterance.voice=pref;
+  const done=()=>{
+    isSpeaking=false; currentUtterance=null;
+    if (isActive){setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active'); startRecognition();}
+  };
+  currentUtterance.onend=done; currentUtterance.onerror=done;
+  window.speechSynthesis.speak(currentUtterance);
 }
 
-function toggleApiSection() {
-  const container = document.getElementById('apiCardsContainer');
-  container.style.display = container.style.display === 'none' ? 'block' : 'none';
-}
+window.speechSynthesis.onvoiceschanged=()=>{};
+
+// ── Spotify Callback Handler (runs on page load if redirected back) ───────
+handleSpotifyCallback();
+
+// Restore spotify token if still valid
+(function restoreSpotify() {
+  const token = localStorage.getItem('spotify_token');
+  const expiry = localStorage.getItem('spotify_token_expiry');
+  const clientId = localStorage.getItem('jarvis_spotify_client_id');
+  if (token && expiry && clientId && Date.now() < parseInt(expiry)) {
+    SPOTIFY_TOKEN = token;
+    SPOTIFY_CLIENT_ID = clientId;
+    document.getElementById('spotifyClientInput').value = clientId.slice(0,4)+'••••'+clientId.slice(-4);
+    document.getElementById('spotifyStatus').textContent = '✓ Spotify session restored.';
+    document.getElementById('spotifyStatus').className = 'api-status spotify-ok';
+    document.getElementById('spotifyPlayer').classList.add('visible');
+    addLog('system','Spotify session restored.');
+    refreshSpotifyStatus();
+    setInterval(refreshSpotifyStatus, 10000);
+  }
+})();
 </script>
 </body>
 </html>
