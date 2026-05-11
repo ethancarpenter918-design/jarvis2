@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;500;600&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg-deep:       #020810;
+  --blue-core:     #00b4ff;
+  --blue-bright:   #38d4ff;
+  --blue-dim:      #0a4a6e;
+  --glass-bg:      rgba(4,20,45,0.55);
+  --glass-border:  rgba(0,180,255,0.12);
+  --text-primary:  #cce9ff;
+  --text-secondary:#4a8faa;
+  --text-dim:      #1e4a60;
+  --green:         #00e5a0;
+  --orange:        #ff9f40;
+  --spotify:       #1DB954;
+  --radius-card:   22px;
+  --radius-pill:   100px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 60px;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,100,200,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(123,79,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 20% at 10% 60%, rgba(0,229,255,0.06) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,180,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index: 0;
+}
+
+.page {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 20px;
+}
+
+/* Header */
+.header { text-align: center; }
+.header h1 {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 28px; font-weight: 400;
+  letter-spacing: 0.55em; text-indent: 0.55em;
+  color: var(--blue-bright);
+  text-shadow: 0 0 28px rgba(56,212,255,0.6), 0 0 60px rgba(56,212,255,0.2);
+}
+.header-sub {
+  font-size: 10px; font-weight: 300;
+  letter-spacing: 0.3em; text-indent: 0.3em;
+  color: var(--text-dim); margin-top: 6px; text-transform: uppercase;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 5px 14px;
+  background: rgba(0,229,160,0.07);
+  border: 0.5px solid rgba(0,229,160,0.22);
+  border-radius: var(--radius-pill);
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.18em; color: var(--green);
+  text-transform: uppercase;
+}
+.badge-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 6px var(--green);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* API Key Cards */
+.api-section { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.api-section-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.3em; color: var(--text-dim);
+  text-transform: uppercase; padding-left: 4px;
+}
+.api-card {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  padding: 16px 20px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.api-card.spotify-card { border-color: rgba(29,185,84,0.2); }
+.api-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em;
+  color: var(--text-dim); margin-bottom: 10px;
+  text-transform: uppercase; display: flex; align-items: center; gap: 8px;
+}
+.api-label .label-icon { font-size: 12px; }
+.api-row { display: flex; gap: 8px; align-items: center; }
+.api-input {
+  flex: 1;
+  background: rgba(0,0,0,0.35);
+  border: 0.5px solid var(--glass-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  padding: 9px 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.api-input:focus { border-color: rgba(0,180,255,0.4); }
+.api-input::placeholder { color: var(--text-dim); }
+.api-save {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 9px 14px; border-radius: 10px;
+  border: 0.5px solid rgba(0,229,160,0.3);
+  background: rgba(0,229,160,0.08); color: var(--green);
+  cursor: pointer; transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.api-save:hover { background: rgba(0,229,160,0.15); }
+.api-save.spotify-btn {
+  border-color: rgba(29,185,84,0.4);
+  background: rgba(29,185,84,0.08); color: var(--spotify);
+}
+.api-save.spotify-btn:hover { background: rgba(29,185,84,0.16); }
+.api-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; margin-top: 8px; letter-spacing: 0.1em;
+  color: var(--text-dim); min-height: 14px;
+}
+.api-status.ok  { color: var(--green); }
+.api-status.err { color: #ff5a5a; }
+.api-status.spotify-ok { color: var(--spotify); }
+
+/* Spotify mini player */
+.spotify-player {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid rgba(29,185,84,0.2);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px);
+  padding: 16px 20px;
+  display: none;
+  flex-direction: column; gap: 12px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.spotify-player.visible { display: flex; }
+.spotify-track-info { display: flex; align-items: center; gap: 12px; }
+.spotify-art {
+  width: 44px; height: 44px; border-radius: 8px;
+  background: rgba(29,185,84,0.15);
+  border: 0.5px solid rgba(29,185,84,0.3);
+  object-fit: cover; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.spotify-art img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+.spotify-meta { flex: 1; min-width: 0; }
+.spotify-title {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spotify-artist {
+  font-size: 11px; color: var(--text-secondary); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spotify-is-playing {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.15em;
+  color: var(--spotify); margin-top: 3px;
+}
+.spotify-controls { display: flex; gap: 8px; }
+.sp-btn {
+  flex: 1;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  padding: 8px 6px; border-radius: 10px;
+  border: 0.5px solid rgba(29,185,84,0.2);
+  background: rgba(29,185,84,0.06); color: var(--spotify);
+  cursor: pointer; transition: all 0.2s;
+}
+.sp-btn:hover { background: rgba(29,185,84,0.14); }
+
+/* Orb card */
+.orb-card {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  padding: 36px 24px 28px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 24px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: box-shadow 0.4s ease;
+}
+.orb-card.state-listening { box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(0,180,255,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+.orb-card.state-speaking  { box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(255,159,64,0.1),  inset 0 1px 0 rgba(255,255,255,0.04); }
+
+/* SVG orb */
+.orb-wrap {
+  position: relative; width: 200px; height: 200px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.orb-svg { width: 100%; height: 100%; overflow: visible; }
+
+.ring-outer { animation: spin-slow 18s linear infinite; transform-origin: 100px 100px; }
+.ring-mid   { animation: spin-slow 12s linear infinite reverse; transform-origin: 100px 100px; }
+.ring-inner { animation: spin-slow 8s linear infinite; transform-origin: 100px 100px; }
+.ribbon-1   { animation: ribbon-flow 4s ease-in-out infinite; transform-origin: 100px 100px; }
+.ribbon-2   { animation: ribbon-flow 4s ease-in-out infinite 1.33s; transform-origin: 100px 100px; }
+.ribbon-3   { animation: ribbon-flow 4s ease-in-out infinite 2.66s; transform-origin: 100px 100px; }
+.orb-core   { animation: core-pulse 2.5s ease-in-out infinite; transform-origin: 100px 100px; }
+
+@keyframes spin-slow   { to { transform: rotate(360deg); } }
+@keyframes ribbon-flow {
+  0%   { transform: rotate(0deg) scaleY(1); }
+  25%  { transform: rotate(30deg) scaleY(1.04); }
+  50%  { transform: rotate(0deg) scaleY(0.96); }
+  75%  { transform: rotate(-30deg) scaleY(1.04); }
+  100% { transform: rotate(0deg) scaleY(1); }
+}
+@keyframes core-pulse {
+  0%,100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.06); opacity: 0.85; }
+}
+
+.orb-wrap.listening .orb-core { animation: core-pulse-fast 0.9s ease-in-out infinite; }
+.orb-wrap.listening .ribbon-1,
+.orb-wrap.listening .ribbon-2,
+.orb-wrap.listening .ribbon-3 { animation-duration: 1.5s; }
+.orb-wrap.speaking .orb-core  { animation: core-pulse-speak 0.5s ease-in-out infinite; }
+.orb-wrap.speaking .ribbon-1,
+.orb-wrap.speaking .ribbon-2,
+.orb-wrap.speaking .ribbon-3  { animation-duration: 0.9s; }
+@keyframes core-pulse-fast  { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.12);opacity:0.75} }
+@keyframes core-pulse-speak { 0%,100%{transform:scale(1)}           50%{transform:scale(1.15)} }
+
+/* Status pill */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px; border-radius: var(--radius-pill);
+  background: rgba(0,0,0,0.3);
+  border: 0.5px solid var(--glass-border);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  color: var(--text-secondary);
+  transition: all 0.4s ease;
+}
+.status-pill.active    { color: var(--green);      border-color: rgba(0,229,160,0.25);  background: rgba(0,229,160,0.06); }
+.status-pill.listening { color: var(--blue-bright); border-color: rgba(56,212,255,0.3); background: rgba(0,180,255,0.08); }
+.status-pill.speaking  { color: var(--orange);     border-color: rgba(255,159,64,0.3);  background: rgba(255,159,64,0.06); }
+.status-pill.error     { color: #ff5a5a;            border-color: rgba(255,90,90,0.3);  background: rgba(255,90,90,0.06); }
+.status-indicator {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text-dim); flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.status-pill.active    .status-indicator { background: var(--green);       box-shadow: 0 0 8px var(--green);       animation: blink 1.5s infinite; }
+.status-pill.listening .status-indicator { background: var(--blue-bright); box-shadow: 0 0 8px var(--blue-bright); animation: blink 0.8s infinite; }
+.status-pill.speaking  .status-indicator { background: var(--orange);      box-shadow: 0 0 8px var(--orange);      animation: blink 0.4s infinite; }
+
+/* Waveform */
+.waveform {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; height: 32px; width: 100%;
+}
+.wave-bar {
+  width: 3px; border-radius: 3px;
+  background: var(--text-dim); height: 4px;
+  transition: background 0.3s;
+}
+.waveform.active    .wave-bar { background: var(--green);       animation: wave 0.8s ease-in-out infinite; }
+.waveform.listening .wave-bar { background: var(--blue-bright); animation: wave 0.6s ease-in-out infinite; }
+.waveform.speaking  .wave-bar { background: var(--orange);      animation: wave 0.45s ease-in-out infinite; }
+@keyframes wave { 0%,100%{height:4px} 50%{height:26px} }
+
+/* Controls */
+.controls { display: flex; gap: 10px; width: 100%; }
+.btn {
+  flex: 1;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px 12px; border-radius: 14px;
+  border: 0.5px solid var(--glass-border);
+  background: var(--glass-bg); color: var(--blue-bright);
+  cursor: pointer;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:hover:not(:disabled)   { background: rgba(0,180,255,0.1); border-color: rgba(0,180,255,0.3); }
+.btn:active:not(:disabled)  { transform: scale(0.97); }
+.btn:disabled               { opacity: 0.3; cursor: not-allowed; }
+.btn.danger                 { color: #ff6b6b; border-color: rgba(255,107,107,0.2); }
+.btn.danger:hover:not(:disabled) { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.35); }
+.btn.secondary              { color: var(--text-secondary); }
+.btn.secondary:hover:not(:disabled) { background: rgba(0,180,255,0.06); }
+
+/* Log card */
+.log-card {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  overflow: hidden;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.log-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 0.5px solid var(--glass-border);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim);
+}
+.log-live { display: flex; align-items: center; gap: 7px; }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text-dim);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.live-dot.on { background: var(--green); box-shadow: 0 0 7px var(--green); animation: blink 1.2s infinite; }
+.log-body {
+  padding: 14px 18px; max-height: 260px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+}
+.log-body::-webkit-scrollbar { width: 3px; }
+.log-body::-webkit-scrollbar-thumb { background: var(--blue-dim); border-radius: 3px; }
+.log-entry {
+  display: flex; gap: 10px;
+  font-size: 13.5px; line-height: 1.55;
+  animation: slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slide-up { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.log-role {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em;
+  padding-top: 3px; min-width: 52px; flex-shrink: 0;
+}
+.log-entry.user   .log-role { color: var(--green); }
+.log-entry.jarvis .log-role { color: var(--blue-bright); }
+.log-entry.system .log-role { color: var(--text-dim); }
+.log-entry .log-text { color: var(--text-primary); font-weight: 300; }
+.log-entry.system .log-text {
+  color: var(--text-secondary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11.5px; font-weight: 400;
+}
+
+/* Commands cheatsheet */
+.cheat-card {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px);
+  padding: 16px 20px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+}
+.cheat-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cheat-item {
+  background: rgba(0,0,0,0.2); border-radius: 8px;
+  padding: 8px 10px;
+  border: 0.5px solid rgba(0,180,255,0.06);
+}
+.cheat-cmd {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px; color: var(--blue-bright); letter-spacing: 0.05em;
+}
+.cheat-desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+.wake-hint { font-size: 12px; font-weight: 300; color: var(--text-dim); letter-spacing: 0.05em; }
+.wake-hint span { color: var(--text-secondary); }
+
+/* Collapsible api section */
+.api-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: var(--text-dim);
+}
+.api-toggle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.3em; color: var(--text-dim);
+  text-transform: uppercase;
+}
+.api-toggle-arrow { font-size: 10px; transition: transform 0.2s; }
+.api-toggle-arrow.open { transform: rotate(180deg); }
+.api-cards-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.api-cards-container.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>J.A.R.V.I.S</h1>
+    <p class="header-sub">Just A Rather Very Intelligent System</p>
+    <div class="badge"><span class="badge-dot"></span>GPT-4o Mini · Multi-API</div>
+  </div>
+
+  <div class="api-section" style="width:100%">
+    <button class="api-toggle" onclick="toggleApiSection()">
+      <span class="api-toggle-label">⚙ API Configuration</span>
+      <span class="api-toggle-arrow open" id="apiArrow">▼</span>
+    </button>
+    <div class="api-cards-container" id="apiCardsContainer">
+
+      <div class="api-card">
+        <div class="api-label"><span class="label-icon">🤖</span> OpenAI API Key</div>
+        <div class="api-row">
+          <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-... your key here" autocomplete="off" spellcheck="false"/>
+          <button class="api-save" onclick="saveOpenAI()">Connect</button>
+        </div>
+        <div class="api-status" id="openaiStatus">Enter your OpenAI API key to activate Jarvis.</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-label"><span class="label-icon">🌤</span> WeatherAPI Key</div>
+        <div class="api-row">
+          <input type="password" class="api-input" id="weatherKeyInput" placeholder="Your WeatherAPI key..." autocomplete="off" spellcheck="false"/>
+          <button class="api-save" onclick="saveWeather()">Connect</button>
+        </div>
+        <div class="api-status" id="weatherStatus">Get a free key at weatherapi.com</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="orb-card" id="orbCard">
+    <div class="orb-wrap" id="orbWrap" onclick="toggleListening()">
+      <svg class="orb-svg" viewBox="0 0 200 200">
+        <circle class="ring-outer" cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="0.8" stroke-dasharray="4 8"/>
+        <circle id="orbCore" class="orb-core" cx="100" cy="100" r="52" fill="var(--blue-dim)" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="status-pill" id="statusBar">SYSTEM IDLE — TAP TO ACTIVATE</div>
+  </div>
+
+  <div class="log-card">
+    <div class="log-card-header">
+      <div class="log-live"><span class="live-dot" id="liveDot"></span>SESSION LOG</div>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="log-entry system"><span class="log-role">SYS</span><span class="log-text">System ready. Connect keys above.</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="startBtn" onclick="toggleListening()">Activate</button>
+    <button class="btn danger" onclick="stopAll()">Deactivate</button>
+  </div>
+
+</div>
+
+<script>
+let OPENAI_KEY = '';
+let WEATHER_KEY = '';
+let userLocation = 'Charlotte';
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null, isActive = false, isSpeaking = false;
+
+function addLog(role, text) {
+  const e = document.createElement('div');
+  e.className = 'log-entry ' + role;
+  const label = role === 'user' ? 'YOU' : role === 'jarvis' ? 'JRVIS' : 'SYS';
+  e.innerHTML = '<span class="log-role">' + label + '</span><span class="log-text">' + text + '</span>';
+  document.getElementById('logBody').appendChild(e);
+  document.getElementById('logBody').scrollTop = document.getElementById('logBody').scrollHeight;
+}
+
+function saveOpenAI() {
+  OPENAI_KEY = document.getElementById('apiKeyInput').value.trim();
+  document.getElementById('openaiStatus').textContent = '✓ Connected';
+  addLog('system', 'OpenAI neural core online.');
+}
+
+function saveWeather() {
+  WEATHER_KEY = document.getElementById('weatherKeyInput').value.trim();
+  document.getElementById('weatherStatus').textContent = '✓ Connected';
+  addLog('system', 'Weather systems online.');
+}
+
+function toggleListening() {
+  isActive ? stopAll() : startListening();
+}
+
+function startListening() {
+  isActive = true;
+  recognition = new SpeechRecognition();
+  recognition.onstart = () => {
+    document.getElementById('statusBar').textContent = "LISTENING...";
+    document.getElementById('liveDot').classList.add('on');
+  };
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript;
+    addLog('user', text);
+    routeCommand(text.toLowerCase(), text);
+  };
+  recognition.onend = () => { if(isActive && !isSpeaking) recognition.start(); };
+  recognition.start();
+}
+
+function stopAll() {
+  isActive = false;
+  if(recognition) recognition.stop();
+  window.speechSynthesis.cancel();
+  document.getElementById('statusBar').textContent = "SYSTEM IDLE";
+  document.getElementById('liveDot').classList.remove('on');
+}
+
+async function routeCommand(lower, original) {
+  if (lower.includes('time')) {
+    speak("It is " + new Date().toLocaleTimeString() + ", sir.");
+    return;
+  }
+  
+  // Default to OpenAI for all other questions
+  if (OPENAI_KEY) {
+    await askOpenAI(original);
+  } else {
+    speak("I require an OpenAI key for general queries, sir.");
+  }
+}
+
+async function askOpenAIRaw(prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{role: 'system', content: "You are JARVIS. Concise and intelligent."}, {role: 'user', content: prompt}]
+    })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error?.message || `HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+async function askOpenAI(prompt) {
+  try {
+    const reply = await askOpenAIRaw(prompt);
+    addLog('jarvis', reply);
+    speak(reply);
+  } catch(err) {
+    addLog('system', 'Neural Link Error: ' + err.message);
+    speak("I am having trouble connecting to my brain, sir. " + err.message);
+  }
+}
+
+function speak(text) {
+  isSpeaking = true;
+  if(recognition) recognition.stop();
+  const u = new SpeechSynthesisUtterance(text);
+  u.onend = () => { isSpeaking = false; if(isActive) recognition.start(); };
+  window.speechSynthesis.speak(u);
+}
+
+function toggleApiSection() {
+  const container = document.getElementById('apiCardsContainer');
+  container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
