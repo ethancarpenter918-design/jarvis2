@@ -423,6 +423,65 @@ body::after {
 .api-toggle-arrow.open { transform: rotate(180deg); }
 .api-cards-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
 .api-cards-container.hidden { display: none; }
+
+/* Prompts menu */
+.prompts-menu {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(24px);
+  padding: 16px 20px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+}
+.prompts-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.prompts-toggle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; color: var(--blue-bright);
+  text-transform: uppercase; display: flex; align-items: center; gap: 8px;
+}
+.prompts-toggle-arrow { font-size: 10px; color: var(--text-dim); transition: transform 0.25s; }
+.prompts-toggle-arrow.open { transform: rotate(180deg); }
+.prompts-body { margin-top: 14px; }
+.prompts-body.hidden { display: none; }
+.prompts-section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.2em; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 8px; margin-top: 14px;
+}
+.prompts-section-label:first-child { margin-top: 0; }
+.cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cheat-item {
+  background: rgba(0,0,0,0.2); border-radius: 8px;
+  padding: 8px 10px;
+  border: 0.5px solid rgba(0,180,255,0.06);
+}
+.cheat-cmd {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px; color: var(--blue-bright); letter-spacing: 0.05em;
+}
+.cheat-desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Music playing indicator */
+.music-indicator {
+  display: none;
+  align-items: center; gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; color: var(--spotify); letter-spacing: 0.12em;
+  margin-top: 4px;
+}
+.music-indicator.visible { display: flex; }
+.music-bars { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.music-bar {
+  width: 3px; background: var(--spotify); border-radius: 2px;
+  animation: music-bounce 0.6s ease-in-out infinite;
+}
+.music-bar:nth-child(2) { animation-delay: 0.1s; }
+.music-bar:nth-child(3) { animation-delay: 0.2s; }
+@keyframes music-bounce { 0%,100%{height:3px} 50%{height:11px} }
 </style>
 </head>
 <body>
@@ -487,6 +546,10 @@ body::after {
         <div class="spotify-title" id="spotifyTitle">Nothing playing</div>
         <div class="spotify-artist" id="spotifyArtist">—</div>
         <div class="spotify-is-playing" id="spotifyState">● PAUSED</div>
+        <div class="music-indicator" id="musicIndicator">
+          <div class="music-bars"><div class="music-bar"></div><div class="music-bar"></div><div class="music-bar"></div></div>
+          <span id="musicIndicatorText">SEARCHING…</span>
+        </div>
       </div>
     </div>
     <div class="spotify-controls">
@@ -631,21 +694,45 @@ body::after {
     </div>
   </div>
 
-  <div class="cheat-card">
-    <div class="cheat-title">⚡ Voice Commands</div>
-    <div class="cheat-grid">
-      <div class="cheat-item"><div class="cheat-cmd">"weather [city]"</div><div class="cheat-desc">Current conditions</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"will it rain"</div><div class="cheat-desc">Rain forecast check</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"play music" / "pause"</div><div class="cheat-desc">Spotify control</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"next song" / "previous"</div><div class="cheat-desc">Skip tracks</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"volume up/down"</div><div class="cheat-desc">Adjust volume</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"what's playing"</div><div class="cheat-desc">Current track</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"news" / "headlines"</div><div class="cheat-desc">Top stories</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"tell me a joke"</div><div class="cheat-desc">Random joke</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"set timer [N] minutes"</div><div class="cheat-desc">Countdown timer</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"open [site]"</div><div class="cheat-desc">Launch website</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">"what time is it"</div><div class="cheat-desc">Current time/date</div></div>
-      <div class="cheat-item"><div class="cheat-cmd">Anything else</div><div class="cheat-desc">GPT-4o answers</div></div>
+  <div class="prompts-menu">
+    <button class="prompts-toggle" onclick="togglePromptsMenu()">
+      <span class="prompts-toggle-label">⚡ Voice Commands &amp; Prompts</span>
+      <span class="prompts-toggle-arrow" id="promptsArrow">▼</span>
+    </button>
+    <div class="prompts-body hidden" id="promptsBody">
+      <div class="prompts-section-label">🌤 Weather</div>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="cheat-cmd">"weather in Dallas"</div><div class="cheat-desc">Current conditions</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"will it rain today"</div><div class="cheat-desc">Rain forecast check</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"how hot is it"</div><div class="cheat-desc">Temperature check</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"forecast for NYC"</div><div class="cheat-desc">Day forecast</div></div>
+      </div>
+      <div class="prompts-section-label">🎵 Music (Spotify)</div>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="cheat-cmd">"play Grenade by Bruno Mars"</div><div class="cheat-desc">Play specific song</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"play [song] by [artist]"</div><div class="cheat-desc">Search &amp; play any track</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"pause" / "resume"</div><div class="cheat-desc">Playback control</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"next song" / "previous"</div><div class="cheat-desc">Skip tracks</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"volume up / down"</div><div class="cheat-desc">Adjust volume</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"what's playing"</div><div class="cheat-desc">Current track</div></div>
+      </div>
+      <div class="prompts-section-label">📰 News &amp; Info</div>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="cheat-cmd">"what's the news"</div><div class="cheat-desc">Top headlines</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"what time is it"</div><div class="cheat-desc">Current time &amp; date</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"tell me a joke"</div><div class="cheat-desc">Random joke</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"set timer 5 minutes"</div><div class="cheat-desc">Countdown timer</div></div>
+      </div>
+      <div class="prompts-section-label">🌐 Navigation</div>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="cheat-cmd">"open YouTube"</div><div class="cheat-desc">Launch website</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"open Netflix"</div><div class="cheat-desc">Launch website</div></div>
+      </div>
+      <div class="prompts-section-label">🤖 AI Assistant</div>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="cheat-cmd">"explain quantum physics"</div><div class="cheat-desc">Any question → GPT</div></div>
+        <div class="cheat-item"><div class="cheat-cmd">"write me a poem"</div><div class="cheat-desc">Creative requests</div></div>
+      </div>
     </div>
   </div>
 
@@ -681,6 +768,13 @@ function toggleApiSection() {
   const container = document.getElementById('apiCardsContainer');
   const arrow = document.getElementById('apiArrow');
   container.classList.toggle('hidden');
+  arrow.classList.toggle('open');
+}
+
+function togglePromptsMenu() {
+  const body = document.getElementById('promptsBody');
+  const arrow = document.getElementById('promptsArrow');
+  body.classList.toggle('hidden');
   arrow.classList.toggle('open');
 }
 
@@ -921,6 +1015,39 @@ async function getCurrentVolume() {
   return data?.device?.volume_percent ?? 50;
 }
 
+async function spotifyPlaySong(query) {
+  if (!SPOTIFY_TOKEN) { speak('Spotify is not connected, sir. Please authenticate first.'); return; }
+  try {
+    const indicator = document.getElementById('musicIndicator');
+    const indicatorText = document.getElementById('musicIndicatorText');
+    indicator.classList.add('visible');
+    indicatorText.textContent = 'SEARCHING…';
+
+    // Search for the track
+    const searchRes = await spotifyFetch('/search?q=' + encodeURIComponent(query) + '&type=track&limit=1');
+    if (!searchRes || !searchRes.tracks || !searchRes.tracks.items.length) {
+      indicator.classList.remove('visible');
+      speak("I couldn't find that track on Spotify, sir.");
+      return;
+    }
+    const track = searchRes.tracks.items[0];
+    const trackUri = track.uri;
+    const trackName = track.name;
+    const artistName = track.artists[0].name;
+
+    indicatorText.textContent = 'PLAYING…';
+    await spotifyFetch('/me/player/play', 'PUT', { uris: [trackUri] });
+    setTimeout(() => { indicator.classList.remove('visible'); refreshSpotifyStatus(); }, 2000);
+
+    const reply = `Playing ${trackName} by ${artistName}, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
+  } catch(err) {
+    document.getElementById('musicIndicator').classList.remove('visible');
+    speak('There was an issue playing that track, sir.');
+  }
+}
+
 // ── Speech Control ───────────────────────────────────────────────────────
 function toggleListening() {
   if (!SpeechRecognition) { addLog('system','Speech recognition not supported. Use Chrome or Edge.'); return; }
@@ -969,22 +1096,42 @@ function handleTranscript(text) {
   const wakeWords = ['hey jarvis','jarvis','ok jarvis','hi jarvis','hello jarvis'];
 
   if (!isAwake) {
-    if (wakeWords.some(p=>lower.includes(p))) {
-      isAwake=true;
+    const matchedWake = wakeWords.find(p => lower.includes(p));
+    if (!matchedWake) return;
+
+    // Strip the wake word and anything before it
+    const afterWake = lower.slice(lower.indexOf(matchedWake) + matchedWake.length).trim();
+    const afterWakeOriginal = text.slice(lower.indexOf(matchedWake) + matchedWake.length).trim();
+
+    if (afterWake.length > 2) {
+      // Command in same breath — process instantly, no confirmation
+      isAwake = false;
       setOrbState('listening');
-      setStatus('JARVIS AWAKENED — LISTENING…','listening');
-      addLog('system','Wake word detected.');
-      speak("Yes, I'm listening.");
-      silenceTimer = setTimeout(()=>{
-        if (isAwake && isActive){isAwake=false; setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active'); addLog('system','Timed out.');}
+      setStatus('PROCESSING…', 'active');
+      addLog('user', afterWakeOriginal);
+      routeCommand(afterWake, afterWakeOriginal);
+    } else {
+      // Wake word alone — wait for follow-up
+      isAwake = true;
+      setOrbState('listening');
+      setStatus('LISTENING…', 'listening');
+      addLog('system', 'Wake word detected.');
+      silenceTimer = setTimeout(() => {
+        if (isAwake && isActive) {
+          isAwake = false;
+          setOrbState('active');
+          setStatus('LISTENING FOR WAKE WORD', 'active');
+          addLog('system', 'Timed out.');
+        }
       }, 8000);
     }
     return;
   }
-  if (silenceTimer){clearTimeout(silenceTimer); silenceTimer=null;}
-  isAwake=false;
+
+  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+  isAwake = false;
   addLog('user', text);
-  setStatus('PROCESSING…','active');
+  setStatus('PROCESSING…', 'active');
   routeCommand(lower, text);
 }
 
@@ -1009,6 +1156,14 @@ async function routeCommand(lower, original) {
 
   // SPOTIFY - playback control
   if (SPOTIFY_TOKEN) {
+    // Play specific song: "play Grenade by Bruno Mars" or "play [song]"
+    const playSongMatch = lower.match(/\bplay\s+(.+?)(?:\s+by\s+(.+))?$/);
+    if (playSongMatch && !lower.match(/\b(play music|resume music|start playing)\b/)) {
+      const songName = playSongMatch[1].trim();
+      const artistName = playSongMatch[2] ? playSongMatch[2].trim() : '';
+      const query = artistName ? `${songName} ${artistName}` : songName;
+      await spotifyPlaySong(query); return;
+    }
     if (lower.match(/\b(play music|resume|resume music|start playing)\b/)) { await spotifyFetch('/me/player/play','PUT'); speak('Playing now, sir.'); refreshSpotifyStatus(); return; }
     if (lower.match(/\b(pause|pause music|stop music|stop playing)\b/)) { await spotifyFetch('/me/player/pause','PUT'); speak('Music paused, sir.'); return; }
     if (lower.match(/\b(next song|next track|skip|skip song)\b/)) { await spotifyNext(); speak('Skipping to next track, sir.'); return; }
@@ -1024,8 +1179,9 @@ async function routeCommand(lower, original) {
     }
   }
 
-  // NEWS
+  // NEWS (works without key via RSS; NewsAPI key optional for fallback)
   if (lower.match(/\b(news|headlines|latest news|what(?:'s| is) happening)\b/)) {
+    if (!OPENAI_KEY) { speak("I need an OpenAI key to summarize the news, sir."); return; }
     await getNews(); return;
   }
 
@@ -1098,17 +1254,37 @@ function startTimer(minutes) {
   setTimeout(() => { speak(`Sir, your ${minutes} minute timer is complete.`); }, ms);
 }
 
-// News
+// News — uses RSS feed via rss2json proxy (no CORS issues, no key required for basic use)
+// Falls back to user's NewsAPI key if provided (note: NewsAPI free tier blocks browser requests)
 async function getNews() {
-  if (!NEWS_KEY) { speak("My news feed isn't configured, sir. Please connect a NewsAPI key."); return; }
   try {
     setStatus('FETCHING NEWS…', 'active');
-    const res = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
+    let headlines = [];
+
+    // Try RSS2JSON with Google News RSS (no key needed, no CORS)
+    const rssUrl = 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
+    const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&count=5';
+    const res = await fetch(proxyUrl);
     const data = await res.json();
-    if (!data.articles || data.articles.length === 0) { speak("I couldn't pull the headlines right now, sir."); return; }
-    const headlines = data.articles.slice(0,4).map(a => a.title).join('. Next: ');
+
+    if (data.status === 'ok' && data.items && data.items.length) {
+      headlines = data.items.slice(0, 5).map(item => item.title.replace(/ - [^-]+$/, ''));
+    } else if (NEWS_KEY) {
+      // Fallback: try NewsAPI if key provided (may be blocked in browser)
+      try {
+        const newsRes = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
+        const newsData = await newsRes.json();
+        if (newsData.articles && newsData.articles.length) {
+          headlines = newsData.articles.slice(0, 4).map(a => a.title);
+        }
+      } catch(e) { /* silent fail */ }
+    }
+
+    if (!headlines.length) { speak("I couldn't pull the headlines right now, sir."); return; }
+
+    const headlineText = headlines.join('. Next: ');
     const aiReply = await askOpenAIRaw(
-      `You are J.A.R.V.I.S. Summarize these news headlines in 2-3 sentences in your characteristic intelligent, concise style. Call the user sir.\n\nHeadlines: ${headlines}`
+      `You are J.A.R.V.I.S. Summarize these news headlines in 2-3 sentences in your characteristic intelligent, concise style. Call the user sir.\n\nHeadlines: ${headlineText}`
     );
     addLog('jarvis', aiReply);
     speak(aiReply);
