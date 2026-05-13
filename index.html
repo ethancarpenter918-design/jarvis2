@@ -703,7 +703,7 @@ function startRecognition() {
   if (!isActive) return;
   if (recognition) { try { recognition.stop(); } catch(e){} }
   recognition = new SpeechRecognition();
-  recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'en-US';
+  recognition.continuous = true; recognition.interimResults = false; recognition.lang = 'en-US';
   recognition.onresult = e => handleTranscript(e.results[0][0].transcript.trim());
   recognition.onerror = e => {
     if (e.error === 'not-allowed') { addLog('system', 'Mic access denied.'); setStatus('MIC DENIED', 'error'); stopAll(); return; }
