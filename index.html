@@ -8,20 +8,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;500;600&family=Share+Tech+Mono&display=swap');
 
 :root {
-  --bg-deep:       #020810;
-  --blue-core:     #00b4ff;
-  --blue-bright:   #38d4ff;
-  --blue-dim:      #0a4a6e;
-  --glass-bg:      rgba(4,20,45,0.55);
-  --glass-border:  rgba(0,180,255,0.12);
-  --text-primary:  #cce9ff;
+  --bg-deep:      #020810;
+  --blue-bright:  #38d4ff;
+  --blue-dim:     #0a4a6e;
+  --glass-bg:     rgba(4,20,45,0.6);
+  --glass-border: rgba(0,180,255,0.12);
+  --text-primary: #cce9ff;
   --text-secondary:#4a8faa;
-  --text-dim:      #1e4a60;
-  --green:         #00e5a0;
-  --orange:        #ff9f40;
-  --spotify:       #1DB954;
-  --radius-card:   22px;
-  --radius-pill:   100px;
+  --text-dim:     #1e4a60;
+  --green:        #00e5a0;
+  --orange:       #ff9f40;
+  --red:          #ff5a5a;
+  --radius-card:  22px;
+  --radius-pill:  100px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,26 +30,20 @@ body {
   background: var(--bg-deep);
   color: var(--text-primary);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center;
   padding: 48px 20px 60px;
   overflow-x: hidden;
-  position: relative;
 }
 
 body::before {
-  content: '';
-  position: fixed; inset: 0;
+  content: ''; position: fixed; inset: 0;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,100,200,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(123,79,255,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 20% at 10% 60%, rgba(0,229,255,0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(123,79,255,0.07) 0%, transparent 60%);
   pointer-events: none; z-index: 0;
 }
 body::after {
-  content: '';
-  position: fixed; inset: 0;
+  content: ''; position: fixed; inset: 0;
   background-image:
     linear-gradient(rgba(0,180,255,0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,180,255,0.025) 1px, transparent 1px);
@@ -58,36 +51,156 @@ body::after {
   pointer-events: none; z-index: 0;
 }
 
+/* ── Settings Gear ───────────────────────────────────────────────────────── */
+.gear-btn {
+  position: fixed; top: 16px; right: 16px; z-index: 300;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(4,20,45,0.8);
+  border: 0.5px solid rgba(0,180,255,0.2);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  transition: all 0.25s ease;
+}
+.gear-btn:hover { background: rgba(0,180,255,0.12); border-color: rgba(0,180,255,0.4); transform: rotate(30deg); }
+.gear-btn.open  { transform: rotate(90deg); border-color: rgba(0,229,160,0.4); }
+.gear-btn svg   { width: 20px; height: 20px; stroke: var(--blue-bright); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+.gear-btn.open svg { stroke: var(--green); }
+
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(2,8,16,0.55);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+/* ── Settings Panel ──────────────────────────────────────────────────────── */
+.settings {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 250;
+  width: min(380px, 94vw);
+  background: rgba(3,12,28,0.98);
+  border-left: 0.5px solid rgba(0,180,255,0.14);
+  backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+  transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: -12px 0 60px rgba(0,0,0,0.7);
+}
+.settings.open { transform: translateX(0); }
+
+.settings-head {
+  padding: 20px 22px 16px;
+  border-bottom: 0.5px solid rgba(0,180,255,0.1);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.settings-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.32em; color: var(--blue-bright);
+  text-transform: uppercase;
+}
+.settings-x {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,90,90,0.08); border: 0.5px solid rgba(255,90,90,0.2);
+  color: #ff8080; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.settings-x:hover { background: rgba(255,90,90,0.18); color: #fff; }
+
+.settings-body {
+  flex: 1; overflow-y: auto; padding: 20px 22px 36px;
+  display: flex; flex-direction: column; gap: 26px;
+}
+.settings-body::-webkit-scrollbar { width: 3px; }
+.settings-body::-webkit-scrollbar-thumb { background: var(--blue-dim); border-radius: 3px; }
+
+.s-section { display: flex; flex-direction: column; gap: 12px; }
+.s-section-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.32em; color: var(--text-dim);
+  text-transform: uppercase; padding-bottom: 6px;
+  border-bottom: 0.5px solid rgba(0,180,255,0.08);
+}
+
+.s-field { display: flex; flex-direction: column; gap: 6px; }
+.s-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; color: var(--text-secondary);
+}
+.s-input {
+  width: 100%; background: rgba(0,0,0,0.45);
+  border: 0.5px solid rgba(0,180,255,0.15); border-radius: 11px;
+  color: var(--text-primary); font-family: 'Share Tech Mono', monospace;
+  font-size: 11.5px; padding: 11px 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.s-input:focus { border-color: rgba(0,180,255,0.45); }
+.s-input::placeholder { color: var(--text-dim); }
+
+.s-row { display: flex; gap: 8px; }
+.s-row .s-input { flex: 1; }
+
+.s-btn {
+  font-family: 'Exo 2', sans-serif; font-size: 11px;
+  font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 10px 16px; border-radius: 10px; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.s-btn.green  { border: 0.5px solid rgba(0,229,160,0.35); background: rgba(0,229,160,0.09); color: var(--green); }
+.s-btn.green:hover  { background: rgba(0,229,160,0.18); }
+.s-btn.blue   { border: 0.5px solid rgba(56,212,255,0.3); background: rgba(0,180,255,0.08); color: var(--blue-bright); }
+.s-btn.blue:hover   { background: rgba(0,180,255,0.16); }
+.s-btn.orange { border: 0.5px solid rgba(255,159,64,0.35); background: rgba(255,159,64,0.08); color: var(--orange); }
+.s-btn.orange:hover { background: rgba(255,159,64,0.18); }
+
+.s-status {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.08em; color: var(--text-dim); min-height: 15px;
+  transition: color 0.3s;
+}
+.s-status.ok  { color: var(--green); }
+.s-status.err { color: var(--red); }
+.s-status.warn { color: var(--orange); }
+
+.s-hint {
+  font-size: 10px; color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.04em; line-height: 1.6;
+}
+.s-hint a { color: var(--text-secondary); text-decoration: none; }
+.s-hint a:hover { color: var(--blue-bright); }
+
+.s-divider { height: 0.5px; background: rgba(0,180,255,0.07); }
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
 .page {
   position: relative; z-index: 1;
   width: 100%; max-width: 440px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
 
 /* Header */
-.header { text-align: center; }
+.header { text-align: center; margin-top: 8px; }
 .header h1 {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 28px; font-weight: 400;
+  font-size: 30px; font-weight: 400;
   letter-spacing: 0.55em; text-indent: 0.55em;
   color: var(--blue-bright);
   text-shadow: 0 0 28px rgba(56,212,255,0.6), 0 0 60px rgba(56,212,255,0.2);
 }
 .header-sub {
-  font-size: 10px; font-weight: 300;
-  letter-spacing: 0.3em; text-indent: 0.3em;
+  font-size: 10px; font-weight: 300; letter-spacing: 0.3em; text-indent: 0.3em;
   color: var(--text-dim); margin-top: 6px; text-transform: uppercase;
 }
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 12px; padding: 5px 14px;
-  background: rgba(0,229,160,0.07);
-  border: 0.5px solid rgba(0,229,160,0.22);
+  margin-top: 12px; padding: 5px 16px;
+  background: rgba(0,229,160,0.07); border: 0.5px solid rgba(0,229,160,0.22);
   border-radius: var(--radius-pill);
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.18em; color: var(--green);
-  text-transform: uppercase;
+  font-size: 9px; font-weight: 500; letter-spacing: 0.18em;
+  color: var(--green); text-transform: uppercase;
 }
 .badge-dot {
   width: 5px; height: 5px; border-radius: 50%;
@@ -96,142 +209,21 @@ body::after {
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* API Key Cards */
-.api-section { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-.api-section-title {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.3em; color: var(--text-dim);
-  text-transform: uppercase; padding-left: 4px;
-}
-.api-card {
-  width: 100%;
-  background: var(--glass-bg);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  padding: 16px 20px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.api-card.spotify-card { border-color: rgba(29,185,84,0.2); }
-.api-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.2em;
-  color: var(--text-dim); margin-bottom: 10px;
-  text-transform: uppercase; display: flex; align-items: center; gap: 8px;
-}
-.api-label .label-icon { font-size: 12px; }
-.api-row { display: flex; gap: 8px; align-items: center; }
-.api-input {
-  flex: 1;
-  background: rgba(0,0,0,0.35);
-  border: 0.5px solid var(--glass-border);
-  border-radius: 10px;
-  color: var(--text-primary);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  padding: 9px 13px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.api-input:focus { border-color: rgba(0,180,255,0.4); }
-.api-input::placeholder { color: var(--text-dim); }
-.api-save {
-  font-family: 'Exo 2', sans-serif;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 9px 14px; border-radius: 10px;
-  border: 0.5px solid rgba(0,229,160,0.3);
-  background: rgba(0,229,160,0.08); color: var(--green);
-  cursor: pointer; transition: all 0.2s ease;
-  white-space: nowrap;
-}
-.api-save:hover { background: rgba(0,229,160,0.15); }
-.api-save.spotify-btn {
-  border-color: rgba(29,185,84,0.4);
-  background: rgba(29,185,84,0.08); color: var(--spotify);
-}
-.api-save.spotify-btn:hover { background: rgba(29,185,84,0.16); }
-.api-status {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; margin-top: 8px; letter-spacing: 0.1em;
-  color: var(--text-dim); min-height: 14px;
-}
-.api-status.ok  { color: var(--green); }
-.api-status.err { color: #ff5a5a; }
-.api-status.spotify-ok { color: var(--spotify); }
-
-/* Spotify mini player */
-.spotify-player {
-  width: 100%;
-  background: var(--glass-bg);
-  border: 0.5px solid rgba(29,185,84,0.2);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(24px);
-  padding: 16px 20px;
-  display: none;
-  flex-direction: column; gap: 12px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.spotify-player.visible { display: flex; }
-.spotify-track-info { display: flex; align-items: center; gap: 12px; }
-.spotify-art {
-  width: 44px; height: 44px; border-radius: 8px;
-  background: rgba(29,185,84,0.15);
-  border: 0.5px solid rgba(29,185,84,0.3);
-  object-fit: cover; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-}
-.spotify-art img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
-.spotify-meta { flex: 1; min-width: 0; }
-.spotify-title {
-  font-size: 13px; font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.spotify-artist {
-  font-size: 11px; color: var(--text-secondary); margin-top: 2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.spotify-is-playing {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.15em;
-  color: var(--spotify); margin-top: 3px;
-}
-.spotify-controls { display: flex; gap: 8px; }
-.sp-btn {
-  flex: 1;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px; letter-spacing: 0.08em;
-  padding: 8px 6px; border-radius: 10px;
-  border: 0.5px solid rgba(29,185,84,0.2);
-  background: rgba(29,185,84,0.06); color: var(--spotify);
-  cursor: pointer; transition: all 0.2s;
-}
-.sp-btn:hover { background: rgba(29,185,84,0.14); }
-
 /* Orb card */
 .orb-card {
-  width: 100%;
-  background: var(--glass-bg);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-card);
+  width: 100%; background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border); border-radius: var(--radius-card);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   padding: 36px 24px 28px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
   box-shadow: 0 8px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: box-shadow 0.4s ease;
 }
 .orb-card.state-listening { box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(0,180,255,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
-.orb-card.state-speaking  { box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(255,159,64,0.1),  inset 0 1px 0 rgba(255,255,255,0.04); }
+.orb-card.state-speaking  { box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(255,159,64,0.10), inset 0 1px 0 rgba(255,255,255,0.04); }
 
-/* SVG orb */
-.orb-wrap {
-  position: relative; width: 200px; height: 200px;
-  cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.orb-svg { width: 100%; height: 100%; overflow: visible; }
+.orb-wrap { width: 200px; height: 200px; cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; }
+.orb-svg  { width: 100%; height: 100%; overflow: visible; }
 
 .ring-outer { animation: spin-slow 18s linear infinite; transform-origin: 100px 100px; }
 .ring-mid   { animation: spin-slow 12s linear infinite reverse; transform-origin: 100px 100px; }
@@ -241,7 +233,7 @@ body::after {
 .ribbon-3   { animation: ribbon-flow 4s ease-in-out infinite 2.66s; transform-origin: 100px 100px; }
 .orb-core   { animation: core-pulse 2.5s ease-in-out infinite; transform-origin: 100px 100px; }
 
-@keyframes spin-slow   { to { transform: rotate(360deg); } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes ribbon-flow {
   0%   { transform: rotate(0deg) scaleY(1); }
   25%  { transform: rotate(30deg) scaleY(1.04); }
@@ -249,10 +241,7 @@ body::after {
   75%  { transform: rotate(-30deg) scaleY(1.04); }
   100% { transform: rotate(0deg) scaleY(1); }
 }
-@keyframes core-pulse {
-  0%,100% { transform: scale(1);    opacity: 1; }
-  50%      { transform: scale(1.06); opacity: 0.85; }
-}
+@keyframes core-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.06);opacity:0.85} }
 
 .orb-wrap.listening .orb-core { animation: core-pulse-fast 0.9s ease-in-out infinite; }
 .orb-wrap.listening .ribbon-1,
@@ -263,300 +252,216 @@ body::after {
 .orb-wrap.speaking .ribbon-2,
 .orb-wrap.speaking .ribbon-3  { animation-duration: 0.9s; }
 @keyframes core-pulse-fast  { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.12);opacity:0.75} }
-@keyframes core-pulse-speak { 0%,100%{transform:scale(1)}           50%{transform:scale(1.15)} }
+@keyframes core-pulse-speak { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
 
 /* Status pill */
 .status-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 18px; border-radius: var(--radius-pill);
-  background: rgba(0,0,0,0.3);
-  border: 0.5px solid var(--glass-border);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px; letter-spacing: 0.14em;
-  color: var(--text-secondary);
-  transition: all 0.4s ease;
+  padding: 8px 20px; border-radius: var(--radius-pill);
+  background: rgba(0,0,0,0.3); border: 0.5px solid var(--glass-border);
+  font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
+  color: var(--text-secondary); transition: all 0.4s ease;
 }
-.status-pill.active    { color: var(--green);      border-color: rgba(0,229,160,0.25);  background: rgba(0,229,160,0.06); }
-.status-pill.listening { color: var(--blue-bright); border-color: rgba(56,212,255,0.3); background: rgba(0,180,255,0.08); }
-.status-pill.speaking  { color: var(--orange);     border-color: rgba(255,159,64,0.3);  background: rgba(255,159,64,0.06); }
-.status-pill.error     { color: #ff5a5a;            border-color: rgba(255,90,90,0.3);  background: rgba(255,90,90,0.06); }
+.status-pill.active    { color: var(--green);       border-color: rgba(0,229,160,0.25);   background: rgba(0,229,160,0.06); }
+.status-pill.listening { color: var(--blue-bright);  border-color: rgba(56,212,255,0.3);  background: rgba(0,180,255,0.08); }
+.status-pill.speaking  { color: var(--orange);       border-color: rgba(255,159,64,0.3);  background: rgba(255,159,64,0.06); }
+.status-pill.error     { color: var(--red);           border-color: rgba(255,90,90,0.3);   background: rgba(255,90,90,0.06); }
 .status-indicator {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--text-dim); flex-shrink: 0;
-  transition: background 0.3s, box-shadow 0.3s;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim);
+  flex-shrink: 0; transition: background 0.3s, box-shadow 0.3s;
 }
 .status-pill.active    .status-indicator { background: var(--green);       box-shadow: 0 0 8px var(--green);       animation: blink 1.5s infinite; }
 .status-pill.listening .status-indicator { background: var(--blue-bright); box-shadow: 0 0 8px var(--blue-bright); animation: blink 0.8s infinite; }
 .status-pill.speaking  .status-indicator { background: var(--orange);      box-shadow: 0 0 8px var(--orange);      animation: blink 0.4s infinite; }
 
 /* Waveform */
-.waveform {
-  display: flex; align-items: center; justify-content: center;
-  gap: 4px; height: 32px; width: 100%;
-}
-.wave-bar {
-  width: 3px; border-radius: 3px;
-  background: var(--text-dim); height: 4px;
-  transition: background 0.3s;
-}
-.waveform.active    .wave-bar { background: var(--green);       animation: wave 0.8s ease-in-out infinite; }
-.waveform.listening .wave-bar { background: var(--blue-bright); animation: wave 0.6s ease-in-out infinite; }
+.waveform { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; width: 100%; }
+.wave-bar { width: 3px; border-radius: 3px; background: var(--text-dim); height: 4px; transition: background 0.3s; }
+.waveform.active    .wave-bar { background: var(--green);       animation: wave 0.8s  ease-in-out infinite; }
+.waveform.listening .wave-bar { background: var(--blue-bright); animation: wave 0.6s  ease-in-out infinite; }
 .waveform.speaking  .wave-bar { background: var(--orange);      animation: wave 0.45s ease-in-out infinite; }
 @keyframes wave { 0%,100%{height:4px} 50%{height:26px} }
-
-/* Controls */
-.controls { display: flex; gap: 10px; width: 100%; }
-.btn {
-  flex: 1;
-  font-family: 'Exo 2', sans-serif;
-  font-size: 13px; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 14px 12px; border-radius: 14px;
-  border: 0.5px solid var(--glass-border);
-  background: var(--glass-bg); color: var(--blue-bright);
-  cursor: pointer;
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.btn:hover:not(:disabled)   { background: rgba(0,180,255,0.1); border-color: rgba(0,180,255,0.3); }
-.btn:active:not(:disabled)  { transform: scale(0.97); }
-.btn:disabled               { opacity: 0.3; cursor: not-allowed; }
-.btn.danger                 { color: #ff6b6b; border-color: rgba(255,107,107,0.2); }
-.btn.danger:hover:not(:disabled) { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.35); }
-.btn.secondary              { color: var(--text-secondary); }
-.btn.secondary:hover:not(:disabled) { background: rgba(0,180,255,0.06); }
-
-/* Log card */
-.log-card {
-  width: 100%;
-  background: var(--glass-bg);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  overflow: hidden;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.log-card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 0.5px solid var(--glass-border);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim);
-}
-.log-live { display: flex; align-items: center; gap: 7px; }
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--text-dim);
-  transition: background 0.3s, box-shadow 0.3s;
-}
-.live-dot.on { background: var(--green); box-shadow: 0 0 7px var(--green); animation: blink 1.2s infinite; }
-.log-body {
-  padding: 14px 18px; max-height: 260px;
-  overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
-}
-.log-body::-webkit-scrollbar { width: 3px; }
-.log-body::-webkit-scrollbar-thumb { background: var(--blue-dim); border-radius: 3px; }
-.log-entry {
-  display: flex; gap: 10px;
-  font-size: 13.5px; line-height: 1.55;
-  animation: slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes slide-up { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-.log-role {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.1em;
-  padding-top: 3px; min-width: 52px; flex-shrink: 0;
-}
-.log-entry.user   .log-role { color: var(--green); }
-.log-entry.jarvis .log-role { color: var(--blue-bright); }
-.log-entry.system .log-role { color: var(--text-dim); }
-.log-entry .log-text { color: var(--text-primary); font-weight: 300; }
-.log-entry.system .log-text {
-  color: var(--text-secondary);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11.5px; font-weight: 400;
-}
-
-/* Commands cheatsheet */
-.cheat-card {
-  width: 100%;
-  background: var(--glass-bg);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(24px);
-  padding: 16px 20px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
-}
-.cheat-title {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim);
-  text-transform: uppercase; margin-bottom: 12px;
-}
-.cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.cheat-item {
-  background: rgba(0,0,0,0.2); border-radius: 8px;
-  padding: 8px 10px;
-  border: 0.5px solid rgba(0,180,255,0.06);
-}
-.cheat-cmd {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9.5px; color: var(--blue-bright); letter-spacing: 0.05em;
-}
-.cheat-desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+.wave-bar:nth-child(2)  { animation-delay: 0.07s; }
+.wave-bar:nth-child(3)  { animation-delay: 0.14s; }
+.wave-bar:nth-child(4)  { animation-delay: 0.21s; }
+.wave-bar:nth-child(5)  { animation-delay: 0.28s; }
+.wave-bar:nth-child(6)  { animation-delay: 0.35s; }
+.wave-bar:nth-child(7)  { animation-delay: 0.28s; }
+.wave-bar:nth-child(8)  { animation-delay: 0.21s; }
+.wave-bar:nth-child(9)  { animation-delay: 0.14s; }
+.wave-bar:nth-child(10) { animation-delay: 0.07s; }
 
 .wake-hint { font-size: 12px; font-weight: 300; color: var(--text-dim); letter-spacing: 0.05em; }
 .wake-hint span { color: var(--text-secondary); }
 
-/* Collapsible api section */
-.api-toggle {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  background: none; border: none; cursor: pointer; padding: 0;
-  color: var(--text-dim);
-}
-.api-toggle-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.3em; color: var(--text-dim);
-  text-transform: uppercase;
-}
-.api-toggle-arrow { font-size: 10px; transition: transform 0.2s; }
-.api-toggle-arrow.open { transform: rotate(180deg); }
-.api-cards-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.api-cards-container.hidden { display: none; }
-
-/* Prompts menu */
-.prompts-menu {
-  width: 100%;
-  background: var(--glass-bg);
+/* Controls */
+.controls { display: flex; gap: 10px; width: 100%; }
+.ctrl-btn {
+  flex: 1; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px 12px; border-radius: 14px;
   border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(24px);
-  padding: 16px 20px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+  background: var(--glass-bg); color: var(--blue-bright);
+  cursor: pointer; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  transition: all 0.2s ease;
 }
-.prompts-toggle {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  background: none; border: none; cursor: pointer; padding: 0;
-}
-.prompts-toggle-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.2em; color: var(--blue-bright);
-  text-transform: uppercase; display: flex; align-items: center; gap: 8px;
-}
-.prompts-toggle-arrow { font-size: 10px; color: var(--text-dim); transition: transform 0.25s; }
-.prompts-toggle-arrow.open { transform: rotate(180deg); }
-.prompts-body { margin-top: 14px; }
-.prompts-body.hidden { display: none; }
-.prompts-section-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.2em; color: var(--text-dim);
-  text-transform: uppercase; margin-bottom: 8px; margin-top: 14px;
-}
-.prompts-section-label:first-child { margin-top: 0; }
-.cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.cheat-item {
-  background: rgba(0,0,0,0.2); border-radius: 8px;
-  padding: 8px 10px;
-  border: 0.5px solid rgba(0,180,255,0.06);
-}
-.cheat-cmd {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9.5px; color: var(--blue-bright); letter-spacing: 0.05em;
-}
-.cheat-desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+.ctrl-btn:hover:not(:disabled) { background: rgba(0,180,255,0.1); border-color: rgba(0,180,255,0.3); }
+.ctrl-btn:active:not(:disabled){ transform: scale(0.97); }
+.ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.ctrl-btn.red  { color: #ff6b6b; border-color: rgba(255,107,107,0.2); }
+.ctrl-btn.red:hover:not(:disabled)  { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.35); }
+.ctrl-btn.gray { color: var(--text-secondary); }
 
-/* Music playing indicator */
-.music-indicator {
-  display: none;
-  align-items: center; gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; color: var(--spotify); letter-spacing: 0.12em;
-  margin-top: 4px;
+/* Log card */
+.log-card {
+  width: 100%; background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border); border-radius: var(--radius-card);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  overflow: hidden; box-shadow: 0 8px 48px rgba(0,0,0,0.4);
 }
-.music-indicator.visible { display: flex; }
-.music-bars { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
-.music-bar {
-  width: 3px; background: var(--spotify); border-radius: 2px;
-  animation: music-bounce 0.6s ease-in-out infinite;
+.log-head {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 14px 18px; border-bottom: 0.5px solid var(--glass-border);
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.18em; text-transform: uppercase;
 }
-.music-bar:nth-child(2) { animation-delay: 0.1s; }
-.music-bar:nth-child(3) { animation-delay: 0.2s; }
-@keyframes music-bounce { 0%,100%{height:3px} 50%{height:11px} }
+.log-meta { display: flex; align-items: center; gap: 10px; }
+.memory-badge {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  letter-spacing: 0.1em; color: var(--text-dim); transition: color 0.3s;
+}
+.clear-mem-btn {
+  font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 6px;
+  border: 0.5px solid rgba(255,90,90,0.22); background: rgba(255,90,90,0.06);
+  color: #ff8080; cursor: pointer; transition: all 0.2s;
+}
+.clear-mem-btn:hover { background: rgba(255,90,90,0.14); }
+.log-body {
+  padding: 14px 18px; max-height: 280px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.log-body::-webkit-scrollbar { width: 3px; }
+.log-body::-webkit-scrollbar-thumb { background: var(--blue-dim); border-radius: 3px; }
+.log-entry {
+  display: flex; gap: 10px; font-size: 13.5px; line-height: 1.55;
+  animation: slide-up 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slide-up { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+.log-role {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; padding-top: 3px; min-width: 52px; flex-shrink: 0;
+}
+.log-entry.user   .log-role { color: var(--green); }
+.log-entry.jarvis .log-role { color: var(--blue-bright); }
+.log-entry.system .log-role { color: var(--text-dim); }
+.log-text { color: var(--text-primary); font-weight: 300; }
+.log-entry.system .log-text { color: var(--text-secondary); font-family: 'Share Tech Mono', monospace; font-size: 11.5px; }
 </style>
 </head>
 <body>
+
+<!-- Gear button -->
+<button class="gear-btn" id="gearBtn" onclick="toggleSettings()" title="Settings">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="toggleSettings()"></div>
+
+<!-- Settings Panel -->
+<div class="settings" id="settingsPanel">
+  <div class="settings-head">
+    <span class="settings-title">⚙ System Config</span>
+    <button class="settings-x" onclick="toggleSettings()">✕</button>
+  </div>
+  <div class="settings-body">
+
+    <!-- Identity -->
+    <div class="s-section">
+      <div class="s-section-title">🤖 Identity</div>
+      <div class="s-field">
+        <span class="s-label">Assistant Name</span>
+        <div class="s-row">
+          <input class="s-input" id="nameInput" placeholder="Jarvis" value="J.A.R.V.I.S"/>
+          <button class="s-btn green" onclick="saveName()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-divider"></div>
+
+    <!-- OpenAI -->
+    <div class="s-section">
+      <div class="s-section-title">🧠 OpenAI — AI Brain</div>
+      <div class="s-field">
+        <span class="s-label">API Key</span>
+        <div class="s-row">
+          <input class="s-input" id="openaiKeyInput" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false"/>
+          <button class="s-btn blue" onclick="saveOpenAI()">Connect</button>
+        </div>
+        <div class="s-status" id="openaiStatus">Required for AI responses.</div>
+        <div class="s-hint">Get a key at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></div>
+      </div>
+    </div>
+
+    <div class="s-divider"></div>
+
+    <!-- Weather -->
+    <div class="s-section">
+      <div class="s-section-title">🌤 Weather API</div>
+      <div class="s-field">
+        <span class="s-label">WeatherAPI Key</span>
+        <div class="s-row">
+          <input class="s-input" id="weatherKeyInput" type="password" placeholder="Your key…" autocomplete="off" spellcheck="false"/>
+          <button class="s-btn green" onclick="saveWeather()">Connect</button>
+        </div>
+        <div class="s-status" id="weatherStatus">Say "Jarvis, weather in Dallas"</div>
+        <div class="s-hint">Free key (1M calls/mo) at <a href="https://www.weatherapi.com/" target="_blank">weatherapi.com</a></div>
+      </div>
+    </div>
+
+    <div class="s-divider"></div>
+
+    <!-- News -->
+    <div class="s-section">
+      <div class="s-section-title">📰 News API</div>
+      <div class="s-field">
+        <span class="s-label">NewsAPI Key</span>
+        <div class="s-row">
+          <input class="s-input" id="newsKeyInput" type="password" placeholder="Your key…" autocomplete="off" spellcheck="false"/>
+          <button class="s-btn green" onclick="saveNews()">Connect</button>
+        </div>
+        <div class="s-status" id="newsStatus">Say "Jarvis, what's in the news?"</div>
+        <div class="s-hint">Free developer key at <a href="https://newsapi.org/register" target="_blank">newsapi.org</a></div>
+      </div>
+    </div>
+
+    <div class="s-divider"></div>
+
+    <!-- Jokes -->
+    <div class="s-section">
+      <div class="s-section-title">😂 JokeAPI</div>
+      <div class="s-field">
+        <div class="s-status ok">✓ Always active — no key needed</div>
+        <div class="s-hint">Say "Jarvis, tell me a joke" anytime.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Main Page -->
 <div class="page">
 
   <div class="header">
-    <h1>J.A.R.V.I.S</h1>
+    <h1 id="uiName">J.A.R.V.I.S</h1>
     <p class="header-sub">Just A Rather Very Intelligent System</p>
-    <div class="badge"><span class="badge-dot"></span>GPT-4o Mini  ·  Multi-API</div>
-  </div>
-
-  <div class="api-section" style="width:100%">
-    <button class="api-toggle" onclick="toggleApiSection()">
-      <span class="api-toggle-label">⚙ API Configuration</span>
-      <span class="api-toggle-arrow open" id="apiArrow">▼</span>
-    </button>
-    <div class="api-cards-container" id="apiCardsContainer">
-
-      <div class="api-card">
-        <div class="api-label"><span class="label-icon">🤖</span> OpenAI API Key</div>
-        <div class="api-row">
-          <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-... your key here" autocomplete="off" spellcheck="false"/>
-          <button class="api-save" onclick="saveOpenAI()">Connect</button>
-        </div>
-        <div class="api-status" id="openaiStatus">Enter your OpenAI API key to activate Jarvis.</div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-label"><span class="label-icon">🌤</span> WeatherAPI Key <span style="font-size:8px;color:var(--text-dim);margin-left:4px">weatherapi.com · free</span></div>
-        <div class="api-row">
-          <input type="password" class="api-input" id="weatherKeyInput" placeholder="Your WeatherAPI key..." autocomplete="off" spellcheck="false"/>
-          <button class="api-save" onclick="saveWeather()">Connect</button>
-        </div>
-        <div class="api-status" id="weatherStatus">Get a free key at weatherapi.com</div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-label"><span class="label-icon">📰</span> NewsAPI Key <span style="font-size:8px;color:var(--text-dim);margin-left:4px">newsapi.org · free</span></div>
-        <div class="api-row">
-          <input type="password" class="api-input" id="newsKeyInput" placeholder="Your NewsAPI key..." autocomplete="off" spellcheck="false"/>
-          <button class="api-save" onclick="saveNews()">Connect</button>
-        </div>
-        <div class="api-status" id="newsStatus">Get a free key at newsapi.org</div>
-      </div>
-
-      <div class="api-card spotify-card">
-        <div class="api-label"><span class="label-icon">🎵</span> Spotify Client ID <span style="font-size:8px;color:var(--text-dim);margin-left:4px">developer.spotify.com · free</span></div>
-        <div class="api-row">
-          <input type="text" class="api-input" id="spotifyClientInput" placeholder="Your Spotify Client ID..." autocomplete="off" spellcheck="false"/>
-          <button class="api-save spotify-btn" onclick="connectSpotify()">Auth</button>
-        </div>
-        <div class="api-status" id="spotifyStatus">Create an app at developer.spotify.com, set redirect URI to this page's URL.</div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="spotify-player" id="spotifyPlayer">
-    <div class="spotify-track-info">
-      <div class="spotify-art" id="spotifyArt">🎵</div>
-      <div class="spotify-meta">
-        <div class="spotify-title" id="spotifyTitle">Nothing playing</div>
-        <div class="spotify-artist" id="spotifyArtist">—</div>
-        <div class="spotify-is-playing" id="spotifyState">● PAUSED</div>
-        <div class="music-indicator" id="musicIndicator">
-          <div class="music-bars"><div class="music-bar"></div><div class="music-bar"></div><div class="music-bar"></div></div>
-          <span id="musicIndicatorText">SEARCHING…</span>
-        </div>
-      </div>
-    </div>
-    <div class="spotify-controls">
-      <button class="sp-btn" onclick="spotifyPrev()">⏮ PREV</button>
-      <button class="sp-btn" onclick="spotifyPlayPause()" id="spPlayBtn">▶ PLAY</button>
-      <button class="sp-btn" onclick="spotifyNext()">⏭ NEXT</button>
-    </div>
+    <div class="badge"><span class="badge-dot"></span>GPT-4o Mini · Memory Active</div>
   </div>
 
   <div class="orb-card" id="orbCard">
@@ -582,34 +487,23 @@ body::after {
             <stop offset="0%"   stop-color="#00b4ff" stop-opacity="0.6"/>
             <stop offset="100%" stop-color="#7b4fff" stop-opacity="0.3"/>
           </linearGradient>
-          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <clipPath id="circleClip"><circle cx="100" cy="100" r="94"/></clipPath>
+          <filter id="glow"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="glow2"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <clipPath id="cc"><circle cx="100" cy="100" r="66"/></clipPath>
         </defs>
-
         <g class="ring-outer" filter="url(#glow)">
-          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="0.8" stroke-dasharray="4 8"/>
-          <circle cx="100" cy="6"   r="2.5" fill="#00b4ff" opacity="0.8"/>
-          <circle cx="100" cy="194" r="2.5" fill="#00b4ff" opacity="0.8"/>
-          <circle cx="6"   cy="100" r="1.5" fill="#0088cc" opacity="0.6"/>
-          <circle cx="194" cy="100" r="1.5" fill="#0088cc" opacity="0.6"/>
-          <circle cx="33"  cy="33"  r="1.5" fill="#0088cc" opacity="0.6"/>
-          <circle cx="167" cy="33"  r="1.5" fill="#0088cc" opacity="0.6"/>
-          <circle cx="167" cy="167" r="1.5" fill="#0088cc" opacity="0.6"/>
-          <circle cx="22"  cy="147" r="1.5" fill="#0088cc" opacity="0.6"/>
+          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="0.8"/>
+          <line x1="100" y1="6"   x2="100" y2="14"  stroke="rgba(0,220,255,0.6)" stroke-width="1.5"/>
+          <line x1="100" y1="186" x2="100" y2="194" stroke="rgba(0,220,255,0.6)" stroke-width="1.5"/>
+          <line x1="6"   y1="100" x2="14"  y2="100" stroke="rgba(0,220,255,0.6)" stroke-width="1.5"/>
+          <line x1="186" y1="100" x2="194" y2="100" stroke="rgba(0,220,255,0.6)" stroke-width="1.5"/>
+          <circle cx="100" cy="6"   r="2.5" fill="#00e5ff" opacity="0.8"/>
+          <circle cx="100" cy="194" r="2.5" fill="#00e5ff" opacity="0.8"/>
+          <circle cx="6"   cy="100" r="2.5" fill="#00e5ff" opacity="0.8"/>
+          <circle cx="194" cy="100" r="2.5" fill="#00e5ff" opacity="0.8"/>
         </g>
         <g class="ring-mid" filter="url(#glow)">
           <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(0,180,255,0.12)" stroke-width="0.6" stroke-dasharray="6 4"/>
-          <line x1="100" y1="20"  x2="100" y2="30"  stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
-          <line x1="180" y1="100" x2="170" y2="100" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
-          <line x1="100" y1="180" x2="100" y2="170" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
-          <line x1="20"  y1="100" x2="30"  y2="100" stroke="rgba(0,200,255,0.5)" stroke-width="1"/>
           <circle cx="100" cy="20"  r="2" fill="#00b4ff" opacity="0.7"/>
           <circle cx="180" cy="100" r="2" fill="#00b4ff" opacity="0.7"/>
           <circle cx="100" cy="180" r="2" fill="#00b4ff" opacity="0.7"/>
@@ -618,166 +512,132 @@ body::after {
         <g class="ring-inner">
           <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(0,200,255,0.08)" stroke-width="0.5" stroke-dasharray="3 6"/>
         </g>
-        <g clip-path="url(#circleClip)">
+        <g clip-path="url(#cc)">
           <g class="ribbon-1" filter="url(#glow)">
-            <path d="M 34 100 C 34 44, 90 18, 140 52 C 172 74, 175 118, 152 142 C 128 168, 78 168, 54 145 C 36 128, 34 114, 34 100 Z"
-              fill="none" stroke="url(#rib1)" stroke-width="3.5" opacity="0.85"/>
-            <path d="M 40 96 C 42 52, 92 28, 138 58 C 166 78, 168 116, 148 138 C 124 164, 80 162, 56 140"
-              fill="none" stroke="url(#rib1)" stroke-width="1.5" opacity="0.5"/>
+            <path d="M 34 100 C 34 44, 90 18, 140 52 C 172 74, 175 118, 152 142 C 128 168, 78 168, 54 145 C 36 128, 34 114, 34 100 Z" fill="none" stroke="url(#rib1)" stroke-width="3.5" opacity="0.85"/>
           </g>
           <g class="ribbon-2" filter="url(#glow)">
-            <path d="M 100 34 C 148 34, 170 80, 154 126 C 140 162, 98 176, 62 156 C 32 138, 28 96, 50 70 C 68 48, 86 34, 100 34 Z"
-              fill="none" stroke="url(#rib2)" stroke-width="3" opacity="0.8"/>
-            <path d="M 104 40 C 146 42, 164 84, 150 124 C 136 158, 96 170, 64 152"
-              fill="none" stroke="url(#rib2)" stroke-width="1.2" opacity="0.45"/>
+            <path d="M 100 34 C 148 34, 170 80, 154 126 C 140 162, 98 176, 62 156 C 32 138, 28 96, 50 70 C 68 48, 86 34, 100 34 Z" fill="none" stroke="url(#rib2)" stroke-width="3" opacity="0.8"/>
           </g>
           <g class="ribbon-3" filter="url(#glow)">
-            <path d="M 68 42 C 102 26, 152 44, 164 88 C 174 126, 150 166, 112 172 C 74 178, 38 150, 34 112 C 30 76, 46 54, 68 42 Z"
-              fill="none" stroke="url(#rib3)" stroke-width="2" opacity="0.6"/>
+            <path d="M 68 42 C 102 26, 152 44, 164 88 C 174 126, 150 166, 112 172 C 74 178, 38 150, 34 112 C 30 76, 46 54, 68 42 Z" fill="none" stroke="url(#rib3)" stroke-width="2" opacity="0.6"/>
           </g>
         </g>
-        <g class="orb-core" filter="url(#glow-strong)">
+        <g class="orb-core" filter="url(#glow2)">
           <circle cx="100" cy="100" r="52" fill="url(#coreGrad)"/>
           <circle cx="100" cy="100" r="52" fill="none" stroke="rgba(0,200,255,0.35)" stroke-width="1.2"/>
-          <ellipse cx="86" cy="82" rx="14" ry="9" fill="rgba(255,255,255,0.07)" transform="rotate(-25 86 82)"/>
           <line x1="82"  y1="100" x2="118" y2="100" stroke="rgba(0,200,255,0.25)" stroke-width="0.8"/>
           <line x1="100" y1="80"  x2="100" y2="120" stroke="rgba(0,200,255,0.25)" stroke-width="0.8"/>
-          <line x1="86"  y1="86"  x2="114" y2="114" stroke="rgba(0,200,255,0.15)" stroke-width="0.6"/>
-          <line x1="114" y1="86"  x2="86"  y2="114" stroke="rgba(0,200,255,0.15)" stroke-width="0.6"/>
           <circle cx="100" cy="100" r="4" fill="#00e5ff" opacity="0.7"/>
           <circle cx="100" cy="100" r="2" fill="#ffffff" opacity="0.5"/>
         </g>
-        <circle id="glowRing" cx="100" cy="100" r="94" fill="none"
-          stroke="rgba(0,180,255,0)" stroke-width="3" filter="url(#glow-strong)"
-          style="transition: stroke 0.4s"/>
+        <circle id="glowRing" cx="100" cy="100" r="94" fill="none" stroke="rgba(0,180,255,0)" stroke-width="3" filter="url(#glow2)" style="transition:stroke 0.4s"/>
       </svg>
     </div>
-
-    <div class="status-pill" id="statusBar">
-      <span class="status-indicator"></span>
-      SYSTEM IDLE — TAP TO ACTIVATE
-    </div>
-
+    <div class="status-pill" id="statusBar"><span class="status-indicator"></span>SYSTEM IDLE — TAP TO ACTIVATE</div>
     <div class="waveform" id="waveform">
-      <div class="wave-bar" style="animation-delay:0s"></div>
-      <div class="wave-bar" style="animation-delay:0.07s"></div>
-      <div class="wave-bar" style="animation-delay:0.14s"></div>
-      <div class="wave-bar" style="animation-delay:0.21s"></div>
-      <div class="wave-bar" style="animation-delay:0.28s"></div>
-      <div class="wave-bar" style="animation-delay:0.35s"></div>
-      <div class="wave-bar" style="animation-delay:0.28s"></div>
-      <div class="wave-bar" style="animation-delay:0.21s"></div>
-      <div class="wave-bar" style="animation-delay:0.14s"></div>
-      <div class="wave-bar" style="animation-delay:0.07s"></div>
-      <div class="wave-bar" style="animation-delay:0s"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div>
     </div>
-
-    <p class="wake-hint">Say <span>"Hey Jarvis"</span> to wake</p>
+    <p class="wake-hint">Say <span>"Hey Jarvis"</span> or tap to activate</p>
   </div>
 
   <div class="controls">
-    <button class="btn" id="startBtn" onclick="toggleListening()">Activate</button>
-    <button class="btn danger" id="stopBtn" onclick="stopAll()" disabled>Deactivate</button>
-    <button class="btn secondary" onclick="clearLog()">Clear</button>
+    <button class="ctrl-btn" id="startBtn" onclick="toggleListening()">Activate</button>
+    <button class="ctrl-btn red" id="stopBtn" onclick="stopAll()" disabled>Deactivate</button>
+    <button class="ctrl-btn gray" onclick="clearMemory()">Clear Memory</button>
   </div>
 
   <div class="log-card">
-    <div class="log-card-header">
-      <div class="log-live"><span class="live-dot" id="liveDot"></span>SESSION LOG</div>
-      <span id="logCount">0 ENTRIES</span>
+    <div class="log-head">
+      <span>Session Log</span>
+      <div class="log-meta">
+        <span class="memory-badge" id="memBadge">0 exchanges in memory</span>
+      </div>
     </div>
     <div class="log-body" id="logBody">
-      <div class="log-entry system">
-        <span class="log-role">SYS</span>
-        <span class="log-text">Connect your API keys above, then tap Activate or say "Hey Jarvis".</span>
-      </div>
+      <div class="log-entry system"><span class="log-role">SYS</span><span class="log-text">System offline. Open settings (⚙ top right) and connect your OpenAI key to begin.</span></div>
     </div>
   </div>
 
-  <div class="prompts-menu">
-    <button class="prompts-toggle" onclick="togglePromptsMenu()">
-      <span class="prompts-toggle-label">⚡ Voice Commands &amp; Prompts</span>
-      <span class="prompts-toggle-arrow" id="promptsArrow">▼</span>
-    </button>
-    <div class="prompts-body hidden" id="promptsBody">
-      <div class="prompts-section-label">🌤 Weather</div>
-      <div class="cheat-grid">
-        <div class="cheat-item"><div class="cheat-cmd">"weather in Dallas"</div><div class="cheat-desc">Current conditions</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"will it rain today"</div><div class="cheat-desc">Rain forecast check</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"how hot is it"</div><div class="cheat-desc">Temperature check</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"forecast for NYC"</div><div class="cheat-desc">Day forecast</div></div>
-      </div>
-      <div class="prompts-section-label">🎵 Music (Spotify)</div>
-      <div class="cheat-grid">
-        <div class="cheat-item"><div class="cheat-cmd">"play Grenade by Bruno Mars"</div><div class="cheat-desc">Play specific song</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"play [song] by [artist]"</div><div class="cheat-desc">Search &amp; play any track</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"pause" / "resume"</div><div class="cheat-desc">Playback control</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"next song" / "previous"</div><div class="cheat-desc">Skip tracks</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"volume up / down"</div><div class="cheat-desc">Adjust volume</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"what's playing"</div><div class="cheat-desc">Current track</div></div>
-      </div>
-      <div class="prompts-section-label">📰 News &amp; Info</div>
-      <div class="cheat-grid">
-        <div class="cheat-item"><div class="cheat-cmd">"what's the news"</div><div class="cheat-desc">Top headlines</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"what time is it"</div><div class="cheat-desc">Current time &amp; date</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"tell me a joke"</div><div class="cheat-desc">Random joke</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"set timer 5 minutes"</div><div class="cheat-desc">Countdown timer</div></div>
-      </div>
-      <div class="prompts-section-label">🌐 Navigation</div>
-      <div class="cheat-grid">
-        <div class="cheat-item"><div class="cheat-cmd">"open YouTube"</div><div class="cheat-desc">Launch website</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"open Netflix"</div><div class="cheat-desc">Launch website</div></div>
-      </div>
-      <div class="prompts-section-label">🤖 AI Assistant</div>
-      <div class="cheat-grid">
-        <div class="cheat-item"><div class="cheat-cmd">"explain quantum physics"</div><div class="cheat-desc">Any question → GPT</div></div>
-        <div class="cheat-item"><div class="cheat-cmd">"write me a poem"</div><div class="cheat-desc">Creative requests</div></div>
-      </div>
-    </div>
-  </div>
-
-</div>
+</div><!-- /page -->
 
 <script>
-// ── State ────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────
 let OPENAI_KEY   = '';
 let WEATHER_KEY  = '';
 let NEWS_KEY     = '';
-let SPOTIFY_CLIENT_ID = '';
-let SPOTIFY_TOKEN = '';
-let SPOTIFY_REFRESH = '';
-let userLocation = 'Charlotte, North Carolina'; // default, auto-detected below
+let ASSISTANT_NAME = 'J.A.R.V.I.S';
+let conversationHistory = [];
+const MAX_HISTORY = 20;
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null, isActive = false, isAwake = false, isSpeaking = false;
-let logEntries = 0, silenceTimer = null, currentUtterance = null;
+let recognition = null, isActive = false, isAwake = false, isSpeaking = false, isConversing = false;
+let silenceTimer = null, converseTimer = null, currentUtterance = null;
 
-const orbWrap   = document.getElementById('orbWrap');
-const orbCard   = document.getElementById('orbCard');
-const glowRing  = document.getElementById('glowRing');
-const statusBar = document.getElementById('statusBar');
-const waveform  = document.getElementById('waveform');
-const logBody   = document.getElementById('logBody');
-const liveDot   = document.getElementById('liveDot');
-const logCount  = document.getElementById('logCount');
-const startBtn  = document.getElementById('startBtn');
-const stopBtn   = document.getElementById('stopBtn');
+// ── DOM refs ──────────────────────────────────────────────────────────────
+const orbWrap  = document.getElementById('orbWrap');
+const orbCard  = document.getElementById('orbCard');
+const glowRing = document.getElementById('glowRing');
+const statusBar= document.getElementById('statusBar');
+const waveform = document.getElementById('waveform');
+const logBody  = document.getElementById('logBody');
+const startBtn = document.getElementById('startBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const memBadge = document.getElementById('memBadge');
 
-// ── UI Helpers ───────────────────────────────────────────────────────────
-function toggleApiSection() {
-  const container = document.getElementById('apiCardsContainer');
-  const arrow = document.getElementById('apiArrow');
-  container.classList.toggle('hidden');
-  arrow.classList.toggle('open');
+// ── Settings panel ────────────────────────────────────────────────────────
+function toggleSettings() {
+  const panel   = document.getElementById('settingsPanel');
+  const overlay = document.getElementById('overlay');
+  const gear    = document.getElementById('gearBtn');
+  const open    = panel.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  gear.classList.toggle('open', open);
 }
 
-function togglePromptsMenu() {
-  const body = document.getElementById('promptsBody');
-  const arrow = document.getElementById('promptsArrow');
-  body.classList.toggle('hidden');
-  arrow.classList.toggle('open');
+function saveName() {
+  const v = document.getElementById('nameInput').value.trim();
+  if (!v) return;
+  ASSISTANT_NAME = v;
+  document.getElementById('uiName').textContent = v;
+  addLog('system', `Identity updated to "${v}".`);
 }
 
+function saveOpenAI() {
+  const k = document.getElementById('openaiKeyInput').value.trim();
+  if (!k) { setSettingStatus('openaiStatus', 'Please enter a key.', 'err'); return; }
+  OPENAI_KEY = k;
+  setSettingStatus('openaiStatus', '✓ Connected — AI is ready.', 'ok');
+  addLog('system', 'OpenAI key connected.');
+}
+
+function saveWeather() {
+  const k = document.getElementById('weatherKeyInput').value.trim();
+  if (!k) { setSettingStatus('weatherStatus', 'Please enter a key.', 'err'); return; }
+  WEATHER_KEY = k;
+  setSettingStatus('weatherStatus', '✓ Connected — try "weather in London"', 'ok');
+  addLog('system', 'Weather API connected.');
+}
+
+function saveNews() {
+  const k = document.getElementById('newsKeyInput').value.trim();
+  if (!k) { setSettingStatus('newsStatus', 'Please enter a key.', 'err'); return; }
+  NEWS_KEY = k;
+  setSettingStatus('newsStatus', '✓ Connected — try "what\'s in the news?"', 'ok');
+  addLog('system', 'News API connected.');
+}
+
+function setSettingStatus(id, msg, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 's-status' + (cls ? ' ' + cls : '');
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────
 function setOrbState(state) {
   orbWrap.className  = 'orb-wrap'  + (state ? ' ' + state : '');
   orbCard.className  = 'orb-card'  + (state ? ' state-' + state : '');
@@ -798,331 +658,99 @@ function addLog(role, text) {
   e.innerHTML = '<span class="log-role">' + label + '</span><span class="log-text">' + text + '</span>';
   logBody.appendChild(e);
   logBody.scrollTop = logBody.scrollHeight;
-  logEntries++;
-  logCount.textContent = logEntries + ' ENTR' + (logEntries === 1 ? 'Y' : 'IES');
 }
 
-function clearLog() { logBody.innerHTML=''; logEntries=0; logCount.textContent='0 ENTRIES'; }
-
-// ── API Key Management ───────────────────────────────────────────────────
-function saveOpenAI() {
-  const val = document.getElementById('apiKeyInput').value.trim();
-  const statusEl = document.getElementById('openaiStatus');
-  if (!val.startsWith('sk-') || val.length < 20) {
-    statusEl.textContent = '✗ Invalid key. Must start with sk-'; statusEl.className='api-status err'; return;
-  }
-  OPENAI_KEY = val;
-  statusEl.textContent = '✓ OpenAI connected — Jarvis is ready.'; statusEl.className='api-status ok';
-  document.getElementById('apiKeyInput').value = val.slice(0,7)+'••••••••••'+val.slice(-4);
-  addLog('system','OpenAI key connected.');
-}
-document.getElementById('apiKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveOpenAI(); });
-
-function saveWeather() {
-  const val = document.getElementById('weatherKeyInput').value.trim();
-  const statusEl = document.getElementById('weatherStatus');
-  if (!val || val.length < 10) { statusEl.textContent='✗ Invalid key'; statusEl.className='api-status err'; return; }
-  WEATHER_KEY = val;
-  statusEl.textContent = '✓ WeatherAPI connected.'; statusEl.className='api-status ok';
-  document.getElementById('weatherKeyInput').value = val.slice(0,4)+'••••••••'+val.slice(-4);
-  addLog('system','WeatherAPI connected. Auto-detecting your location…');
-  autoDetectLocation();
-}
-document.getElementById('weatherKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveWeather(); });
-
-function saveNews() {
-  const val = document.getElementById('newsKeyInput').value.trim();
-  const statusEl = document.getElementById('newsStatus');
-  if (!val || val.length < 10) { statusEl.textContent='✗ Invalid key'; statusEl.className='api-status err'; return; }
-  NEWS_KEY = val;
-  statusEl.textContent = '✓ NewsAPI connected.'; statusEl.className='api-status ok';
-  document.getElementById('newsKeyInput').value = val.slice(0,4)+'••••••••'+val.slice(-4);
-  addLog('system','NewsAPI connected. Say "Hey Jarvis, what\'s the news?"');
-}
-document.getElementById('newsKeyInput').addEventListener('keydown', e => { if(e.key==='Enter') saveNews(); });
-
-// ── IP-based Location Auto-detection ────────────────────────────────────
-async function autoDetectLocation() {
-  try {
-    const res = await fetch('https://ipapi.co/json/');
-    const data = await res.json();
-    if (data.city) {
-      userLocation = data.city + ', ' + (data.region || data.country_name);
-      addLog('system', 'Location detected: ' + userLocation);
-    }
-  } catch(e) { /* silent fail, use default */ }
+function updateMemBadge() {
+  const pairs = Math.floor(conversationHistory.length / 2);
+  memBadge.textContent = pairs + ' exchange' + (pairs === 1 ? '' : 's') + ' in memory';
+  memBadge.style.color = pairs > 0 ? 'var(--green)' : 'var(--text-dim)';
 }
 
-// Also try on page load (no key needed for ip api)
-autoDetectLocation();
-
-// ── Spotify OAuth PKCE ───────────────────────────────────────────────────
-function generateCodeVerifier(length=128) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let result = '';
-  const arr = new Uint8Array(length);
-  window.crypto.getRandomValues(arr);
-  arr.forEach(b => result += chars[b % chars.length]);
-  return result;
+function clearMemory() {
+  conversationHistory = [];
+  updateMemBadge();
+  addLog('system', 'Conversation memory cleared.');
 }
 
-async function generateCodeChallenge(verifier) {
-  const data = new TextEncoder().encode(verifier);
-  const digest = await window.crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-async function connectSpotify() {
-  const clientId = document.getElementById('spotifyClientInput').value.trim();
-  if (!clientId || clientId.length < 10) {
-    document.getElementById('spotifyStatus').textContent = '✗ Enter a valid Spotify Client ID';
-    document.getElementById('spotifyStatus').className = 'api-status err';
-    return;
-  }
-  SPOTIFY_CLIENT_ID = clientId;
-  localStorage.setItem('jarvis_spotify_client_id', clientId);
-
-  const verifier = generateCodeVerifier();
-  const challenge = await generateCodeChallenge(verifier);
-  localStorage.setItem('spotify_code_verifier', verifier);
-
-  const redirectUri = window.location.href.split('?')[0].split('#')[0];
-  const scopes = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
-  const params = new URLSearchParams({
-    client_id: clientId,
-    response_type: 'code',
-    redirect_uri: redirectUri,
-    code_challenge_method: 'S256',
-    code_challenge: challenge,
-    scope: scopes
-  });
-
-  window.location = 'https://accounts.spotify.com/authorize?' + params.toString();
-}
-
-async function handleSpotifyCallback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  if (!code) return;
-
-  // Clean URL
-  window.history.replaceState({}, document.title, window.location.pathname);
-
-  const clientId = localStorage.getItem('jarvis_spotify_client_id');
-  const verifier = localStorage.getItem('spotify_code_verifier');
-  const redirectUri = window.location.href.split('?')[0];
-
-  if (!clientId || !verifier) { addLog('system','Spotify auth error: missing state.'); return; }
-
-  SPOTIFY_CLIENT_ID = clientId;
-  document.getElementById('spotifyClientInput').value = clientId.slice(0,4) + '••••' + clientId.slice(-4);
-
-  try {
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: clientId,
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        code_verifier: verifier
-      })
-    });
-    const data = await res.json();
-    if (data.access_token) {
-      SPOTIFY_TOKEN = data.access_token;
-      localStorage.setItem('spotify_token', SPOTIFY_TOKEN);
-      localStorage.setItem('spotify_token_expiry', Date.now() + data.expires_in * 1000);
-      document.getElementById('spotifyStatus').textContent = '✓ Spotify connected!';
-      document.getElementById('spotifyStatus').className = 'api-status spotify-ok';
-      addLog('system','Spotify connected. Voice-control your music!');
-      document.getElementById('spotifyPlayer').classList.add('visible');
-      refreshSpotifyStatus();
-      setInterval(refreshSpotifyStatus, 10000);
-    } else {
-      document.getElementById('spotifyStatus').textContent = '✗ Auth failed: ' + (data.error_description || data.error);
-      document.getElementById('spotifyStatus').className = 'api-status err';
-    }
-  } catch(e) {
-    document.getElementById('spotifyStatus').textContent = '✗ Network error';
-    document.getElementById('spotifyStatus').className = 'api-status err';
-  }
-  localStorage.removeItem('spotify_code_verifier');
-}
-
-async function spotifyFetch(endpoint, method='GET', body=null) {
-  if (!SPOTIFY_TOKEN) return null;
-  const opts = { method, headers: { 'Authorization': 'Bearer ' + SPOTIFY_TOKEN } };
-  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-  try {
-    const res = await fetch('https://api.spotify.com/v1' + endpoint, opts);
-    if (res.status === 401) { SPOTIFY_TOKEN = ''; addLog('system','Spotify session expired. Please re-authenticate.'); return null; }
-    if (res.status === 204 || res.status === 202) return {};
-    return await res.json();
-  } catch(e) { return null; }
-}
-
-async function refreshSpotifyStatus() {
-  const data = await spotifyFetch('/me/player/currently-playing');
-  if (!data || !data.item) return;
-  updateSpotifyUI(data);
-}
-
-function updateSpotifyUI(data) {
-  if (!data || !data.item) return;
-  const track = data.item;
-  document.getElementById('spotifyTitle').textContent = track.name;
-  document.getElementById('spotifyArtist').textContent = track.artists.map(a=>a.name).join(', ');
-  document.getElementById('spotifyState').textContent = data.is_playing ? '▶ PLAYING' : '■ PAUSED';
-  document.getElementById('spPlayBtn').textContent = data.is_playing ? '⏸ PAUSE' : '▶ PLAY';
-  const art = document.getElementById('spotifyArt');
-  const img = track.album?.images?.[0]?.url;
-  if (img) art.innerHTML = '<img src="' + img + '" alt="album art">';
-}
-
-async function spotifyPlayPause() {
-  const data = await spotifyFetch('/me/player/currently-playing');
-  if (data && data.is_playing) {
-    await spotifyFetch('/me/player/pause', 'PUT');
-    document.getElementById('spotifyState').textContent = '■ PAUSED';
-    document.getElementById('spPlayBtn').textContent = '▶ PLAY';
-  } else {
-    await spotifyFetch('/me/player/play', 'PUT');
-    document.getElementById('spotifyState').textContent = '▶ PLAYING';
-    document.getElementById('spPlayBtn').textContent = '⏸ PAUSE';
-  }
-}
-
-async function spotifyNext() {
-  await spotifyFetch('/me/player/next', 'POST');
-  setTimeout(refreshSpotifyStatus, 800);
-}
-
-async function spotifyPrev() {
-  await spotifyFetch('/me/player/previous', 'POST');
-  setTimeout(refreshSpotifyStatus, 800);
-}
-
-async function spotifySetVolume(pct) {
-  pct = Math.max(0, Math.min(100, pct));
-  await spotifyFetch('/me/player/volume?volume_percent=' + pct, 'PUT');
-}
-
-async function getCurrentVolume() {
-  const data = await spotifyFetch('/me/player');
-  return data?.device?.volume_percent ?? 50;
-}
-
-async function spotifyPlaySong(query) {
-  if (!SPOTIFY_TOKEN) { speak('Spotify is not connected, sir. Please authenticate first.'); return; }
-  try {
-    const indicator = document.getElementById('musicIndicator');
-    const indicatorText = document.getElementById('musicIndicatorText');
-    indicator.classList.add('visible');
-    indicatorText.textContent = 'SEARCHING…';
-
-    // Search for the track
-    const searchRes = await spotifyFetch('/search?q=' + encodeURIComponent(query) + '&type=track&limit=1');
-    if (!searchRes || !searchRes.tracks || !searchRes.tracks.items.length) {
-      indicator.classList.remove('visible');
-      speak("I couldn't find that track on Spotify, sir.");
-      return;
-    }
-    const track = searchRes.tracks.items[0];
-    const trackUri = track.uri;
-    const trackName = track.name;
-    const artistName = track.artists[0].name;
-
-    indicatorText.textContent = 'PLAYING…';
-    await spotifyFetch('/me/player/play', 'PUT', { uris: [trackUri] });
-    setTimeout(() => { indicator.classList.remove('visible'); refreshSpotifyStatus(); }, 2000);
-
-    const reply = `Playing ${trackName} by ${artistName}, sir.`;
-    addLog('jarvis', reply);
-    speak(reply);
-  } catch(err) {
-    document.getElementById('musicIndicator').classList.remove('visible');
-    speak('There was an issue playing that track, sir.');
-  }
-}
-
-// ── Speech Control ───────────────────────────────────────────────────────
+// ── Voice control ─────────────────────────────────────────────────────────
 function toggleListening() {
-  if (!SpeechRecognition) { addLog('system','Speech recognition not supported. Use Chrome or Edge.'); return; }
-  if (!OPENAI_KEY) { addLog('system','Please connect your OpenAI API key first.'); return; }
+  if (!SpeechRecognition) { addLog('system', 'Speech recognition not supported. Please use Chrome or Edge.'); return; }
   isActive ? stopAll() : startListening();
 }
 
 function startListening() {
-  isActive=true; isAwake=false;
-  startBtn.disabled=true; stopBtn.disabled=false; startBtn.textContent='Active';
+  isActive = true; isAwake = false;
+  startBtn.disabled = true; stopBtn.disabled = false; startBtn.textContent = 'Active';
   setOrbState('active');
-  setStatus('LISTENING FOR WAKE WORD','active');
-  addLog('system','System online. Listening for "Hey Jarvis"…');
-  liveDot.className='live-dot on';
+  setStatus('LISTENING FOR WAKE WORD', 'active');
+  addLog('system', 'System online. Say "Hey ' + ASSISTANT_NAME + '" to begin.');
   startRecognition();
 }
 
 function stopAll() {
-  isActive=false; isAwake=false; isSpeaking=false;
-  if (recognition){try{recognition.stop();}catch(e){} recognition=null;}
-  if (currentUtterance){window.speechSynthesis.cancel(); currentUtterance=null;}
-  if (silenceTimer){clearTimeout(silenceTimer); silenceTimer=null;}
-  startBtn.disabled=false; stopBtn.disabled=true; startBtn.textContent='Activate';
+  isActive = false; isAwake = false; isSpeaking = false; isConversing = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+  if (currentUtterance) { window.speechSynthesis.cancel(); currentUtterance = null; }
+  if (silenceTimer)  { clearTimeout(silenceTimer);  silenceTimer = null; }
+  if (converseTimer) { clearTimeout(converseTimer); converseTimer = null; }
+  startBtn.disabled = false; stopBtn.disabled = true; startBtn.textContent = 'Activate';
   setOrbState('');
   setStatus('SYSTEM IDLE — TAP TO ACTIVATE');
-  addLog('system','System deactivated.');
-  liveDot.className='live-dot';
+  addLog('system', 'System deactivated.');
 }
 
 function startRecognition() {
   if (!isActive) return;
-  if (recognition){try{recognition.stop();}catch(e){}}
+  if (recognition) { try { recognition.stop(); } catch(e){} }
   recognition = new SpeechRecognition();
-  recognition.continuous=true;
-  recognition.interimResults=false; recognition.lang='en-US';
-  recognition.onresult = e => handleTranscript(e.results[e.results.length-1][0].transcript.trim());
+  recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'en-US';
+  recognition.onresult = e => handleTranscript(e.results[0][0].transcript.trim());
   recognition.onerror = e => {
-    if (e.error==='not-allowed'){addLog('system','Mic access denied.'); setStatus('MIC DENIED','error'); stopAll();}
+    if (e.error === 'not-allowed') { addLog('system', 'Mic access denied.'); setStatus('MIC DENIED', 'error'); stopAll(); return; }
+    if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 300);
   };
-  try{recognition.start();}catch(e){}
+  recognition.onend = () => { if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 200); };
+  try { recognition.start(); } catch(e) {}
 }
 
+// ── Transcript router ─────────────────────────────────────────────────────
 function handleTranscript(text) {
   if (!isActive) return;
   const lower = text.toLowerCase();
-  const wakeWords = ['hey jarvis','jarvis','ok jarvis','hi jarvis','hello jarvis'];
+  const wakeWords = ['hey jarvis', 'jarvis', 'ok jarvis', 'hi jarvis', 'hello jarvis',
+    'hey ' + ASSISTANT_NAME.toLowerCase(), ASSISTANT_NAME.toLowerCase()];
 
+  // Follow-up conversation window — no wake word needed
+  if (isConversing) {
+    if (converseTimer) { clearTimeout(converseTimer); converseTimer = null; }
+    isConversing = false; isAwake = false;
+    addLog('user', text);
+    setStatus('PROCESSING…', 'active');
+    routeCommand(lower, text);
+    return;
+  }
+
+  // Wake word detection
   if (!isAwake) {
-    const matchedWake = wakeWords.find(p => lower.includes(p));
-    if (!matchedWake) return;
-
-    // Strip the wake word and anything before it
-    const afterWake = lower.slice(lower.indexOf(matchedWake) + matchedWake.length).trim();
-    const afterWakeOriginal = text.slice(lower.indexOf(matchedWake) + matchedWake.length).trim();
+    const matched = wakeWords.find(p => lower.includes(p));
+    if (!matched) return;
+    const afterWake = lower.slice(lower.indexOf(matched) + matched.length).trim();
+    const afterWakeOrig = text.slice(lower.indexOf(matched) + matched.length).trim();
 
     if (afterWake.length > 2) {
-      // Command in same breath — process instantly, no confirmation
+      // Command in same breath — instant processing
       isAwake = false;
-      setOrbState('listening');
+      addLog('user', afterWakeOrig);
       setStatus('PROCESSING…', 'active');
-      addLog('user', afterWakeOriginal);
-      routeCommand(afterWake, afterWakeOriginal);
+      routeCommand(afterWake, afterWakeOrig);
     } else {
-      // Wake word alone — wait for follow-up
+      // Wake word alone — await follow-up
       isAwake = true;
       setOrbState('listening');
       setStatus('LISTENING…', 'listening');
-      addLog('system', 'Wake word detected.');
+      addLog('system', 'Activated — go ahead.');
       silenceTimer = setTimeout(() => {
-        if (isAwake && isActive) {
-          isAwake = false;
-          setOrbState('active');
-          setStatus('LISTENING FOR WAKE WORD', 'active');
-          addLog('system', 'Timed out.');
-        }
+        if (isAwake && isActive) { isAwake = false; setOrbState('active'); setStatus('LISTENING FOR WAKE WORD', 'active'); }
       }, 8000);
     }
     return;
@@ -1135,256 +763,213 @@ function handleTranscript(text) {
   routeCommand(lower, text);
 }
 
-// ── Command Router ───────────────────────────────────────────────────────
-async function routeCommand(lower, original) {
+function routeCommand(lower, original) {
+  const jokeTriggers    = ['joke', 'funny', 'make me laugh', 'tell me something funny'];
+  const weatherTriggers = ['weather', 'temperature', 'forecast', 'rain', 'humid', 'wind', 'sunny', 'cloudy'];
+  const newsTriggers    = ['news', 'headlines', 'what\'s happening', 'latest', 'current events'];
 
-  // TIME & DATE
-  if (lower.includes('what time') || lower.includes('current time') || lower.match(/^(time|date)$/)) {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit',hour12:true});
-    const dateStr = now.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric'});
-    const reply = `It is ${timeStr} on ${dateStr}, sir.`;
-    addLog('jarvis', reply); speak(reply); return;
-  }
-
-  // WEATHER
-  if (lower.includes('weather') || lower.includes('temperature') || lower.includes('forecast') ||
-      lower.includes('will it rain') || lower.includes('is it raining') || lower.includes('how hot') || lower.includes('how cold')) {
-    let loc = extractLocation(lower) || userLocation;
-    await getWeather(loc, lower); return;
-  }
-
-  // SPOTIFY - playback control
-  if (SPOTIFY_TOKEN) {
-    // Play specific song: "play Grenade by Bruno Mars" or "play [song]"
-    const playSongMatch = lower.match(/\bplay\s+(.+?)(?:\s+by\s+(.+))?$/);
-    if (playSongMatch && !lower.match(/\b(play music|resume music|start playing)\b/)) {
-      const songName = playSongMatch[1].trim();
-      const artistName = playSongMatch[2] ? playSongMatch[2].trim() : '';
-      const query = artistName ? `${songName} ${artistName}` : songName;
-      await spotifyPlaySong(query); return;
-    }
-    if (lower.match(/\b(play music|resume|resume music|start playing)\b/)) { await spotifyFetch('/me/player/play','PUT'); speak('Playing now, sir.'); refreshSpotifyStatus(); return; }
-    if (lower.match(/\b(pause|pause music|stop music|stop playing)\b/)) { await spotifyFetch('/me/player/pause','PUT'); speak('Music paused, sir.'); return; }
-    if (lower.match(/\b(next song|next track|skip|skip song)\b/)) { await spotifyNext(); speak('Skipping to next track, sir.'); return; }
-    if (lower.match(/\b(previous song|previous track|go back|last song)\b/)) { await spotifyPrev(); speak('Going back, sir.'); return; }
-    if (lower.match(/\b(volume up|turn it up|louder)\b/)) { const v = await getCurrentVolume(); await spotifySetVolume(v+15); speak('Volume increased, sir.'); return; }
-    if (lower.match(/\b(volume down|turn it down|quieter|lower the volume)\b/)) { const v = await getCurrentVolume(); await spotifySetVolume(v-15); speak('Volume decreased, sir.'); return; }
-    if (lower.match(/\bvolume\s+(\d+)/)) { const m = lower.match(/\bvolume\s+(\d+)/); await spotifySetVolume(parseInt(m[1])); speak(`Volume set to ${m[1]}%, sir.`); return; }
-    if (lower.match(/\b(what(?:'s| is) playing|current(?:ly playing)? song|now playing)\b/)) {
-      const d = await spotifyFetch('/me/player/currently-playing');
-      if (d && d.item) { const reply = `Currently playing ${d.item.name} by ${d.item.artists[0].name}.`; addLog('jarvis',reply); speak(reply); } 
-      else { speak("Nothing seems to be playing right now, sir."); }
-      return;
-    }
-  }
-
-  // NEWS (works without key via RSS; NewsAPI key optional for fallback)
-  if (lower.match(/\b(news|headlines|latest news|what(?:'s| is) happening)\b/)) {
-    if (!OPENAI_KEY) { speak("I need an OpenAI key to summarize the news, sir."); return; }
-    await getNews(); return;
-  }
-
-  // JOKE
-  if (lower.match(/\b(joke|tell me a joke|make me laugh|something funny)\b/)) {
-    await getJoke(); return;
-  }
-
-  // TIMER
-  const timerMatch = lower.match(/(\d+)\s*(?:minute|min)/);
-  if (lower.includes('timer') && timerMatch) { startTimer(parseInt(timerMatch[1])); return; }
-
-  // WEBSITES
-  const siteMap = { youtube:'https://youtube.com', spotify:'https://open.spotify.com', google:'https://google.com', netflix:'https://netflix.com', github:'https://github.com', twitter:'https://twitter.com', reddit:'https://reddit.com' };
-  for (const [name, url] of Object.entries(siteMap)) {
-    if (lower.includes('open ' + name)) { window.open(url,'_blank'); speak('Opening ' + name + ', sir.'); return; }
-  }
-
-  // FALLBACK → GPT
-  await askOpenAI(original);
+  if (jokeTriggers.some(t => lower.includes(t)))    { getJoke(); return; }
+  if (weatherTriggers.some(t => lower.includes(t))) { getWeather(lower); return; }
+  if (newsTriggers.some(t => lower.includes(t)))    { getNews(); return; }
+  askAI(original);
 }
 
-// Extract location from speech (e.g. "weather in Dallas" → "Dallas")
-function extractLocation(lower) {
-  const match = lower.match(/(?:weather|temperature|forecast)\s+(?:in|for|at)\s+([a-z\s,]+?)(?:\s|$)/i);
-  return match ? match[1].trim() : null;
-}
+// ── Weather ───────────────────────────────────────────────────────────────
+async function getWeather(lower) {
+  if (!WEATHER_KEY) {
+    speak('I need a WeatherAPI key first, sir. Please add it in the settings menu.');
+    return;
+  }
 
-// ── Feature Functions ────────────────────────────────────────────────────
+  // Extract location from query
+  let location = 'Charlotte, North Carolina'; // sensible default
+  const locPatterns = [
+    /weather (?:in|for|at|near) ([a-z ,]+?)(?:\?|$)/i,
+    /(?:in|for|at|near) ([a-z ,]+?) (?:weather|temperature|forecast)/i,
+    /forecast (?:in|for|at) ([a-z ,]+?)(?:\?|$)/i,
+  ];
+  for (const pat of locPatterns) {
+    const m = lower.match(pat);
+    if (m && m[1].trim().length > 1) { location = m[1].trim(); break; }
+  }
 
-// Weather — with AI-powered summary via OpenAI
-async function getWeather(location, originalQuery='weather') {
-  if (!WEATHER_KEY) { speak('My weather sensors are not configured, sir. Please add a WeatherAPI key.'); return; }
+  setStatus('FETCHING WEATHER…', 'active');
   try {
-    setStatus('CHECKING WEATHER…', 'active');
-    const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_KEY}&q=${encodeURIComponent(location)}&days=1&aqi=no`);
+    const res  = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_KEY}&q=${encodeURIComponent(location)}&days=1&aqi=no`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.error) { speak('I could not retrieve the weather for that location, sir.'); return; }
 
-    const current = data.current;
-    const forecast = data.forecast.forecastday[0];
-    const weatherContext = `Location: ${data.location.name}, ${data.location.region}
-Temp: ${current.temp_f}°F (feels like ${current.feelslike_f}°F)
-Condition: ${current.condition.text}
-Humidity: ${current.humidity}%
-Wind: ${current.wind_mph} mph ${current.wind_dir}
-UV Index: ${current.uv}
-Today's High: ${forecast.day.maxtemp_f}°F, Low: ${forecast.day.mintemp_f}°F
-Chance of rain: ${forecast.day.daily_chance_of_rain}%
-Sunrise: ${forecast.astro.sunrise}, Sunset: ${forecast.astro.sunset}
-User asked: "${originalQuery}"`;
+    const city    = data.location.name;
+    const region  = data.location.region;
+    const country = data.location.country;
+    const tempF   = Math.round(data.current.temp_f);
+    const tempC   = Math.round(data.current.temp_c);
+    const feels   = Math.round(data.current.feelslike_f);
+    const cond    = data.current.condition.text;
+    const humid   = data.current.humidity;
+    const wind    = Math.round(data.current.wind_mph);
+    const high    = Math.round(data.forecast.forecastday[0].day.maxtemp_f);
+    const low     = Math.round(data.forecast.forecastday[0].day.mintemp_f);
 
-    // AI-powered natural weather response
-    const aiReply = await askOpenAIRaw(
-      `You are J.A.R.V.I.S., Tony Stark's AI. Based on this weather data, give a natural, concise, slightly witty 1-2 sentence weather report. Answer the specific question if there is one. Call the user sir.\n\n${weatherContext}`
-    );
-    addLog('jarvis', aiReply);
-    speak(aiReply);
+    const reply = `Currently in ${city}, ${region}: ${tempF}°F, ${tempC}°C — ${cond}. Feels like ${feels}°F. Humidity at ${humid}%, winds ${wind} mph. Today's high is ${high}°F and low is ${low}°F, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
   } catch(err) {
-    addLog('system','Weather error: '+err.message);
-    speak('Weather systems are offline, sir.');
+    const msg = 'Unable to retrieve weather data, sir. Please check the API key in settings.';
+    addLog('jarvis', msg);
+    speak(msg);
   }
 }
 
-// Timer
-function startTimer(minutes) {
-  const ms = minutes * 60 * 1000;
-  addLog('system', `Timer started for ${minutes} minutes.`);
-  speak(`Timer set for ${minutes} minutes, sir.`);
-  setTimeout(() => { speak(`Sir, your ${minutes} minute timer is complete.`); }, ms);
-}
-
-// News — uses RSS feed via rss2json proxy (no CORS issues, no key required for basic use)
-// Falls back to user's NewsAPI key if provided (note: NewsAPI free tier blocks browser requests)
+// ── News ──────────────────────────────────────────────────────────────────
 async function getNews() {
-  try {
-    setStatus('FETCHING NEWS…', 'active');
-    let headlines = [];
+  if (!NEWS_KEY) {
+    speak('I need a NewsAPI key first, sir. Please add it in the settings menu.');
+    return;
+  }
 
-    // Try RSS2JSON with Google News RSS (no key needed, no CORS)
-    const rssUrl = 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
-    const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&count=5';
-    const res = await fetch(proxyUrl);
+  setStatus('FETCHING NEWS…', 'active');
+  try {
+    // NewsAPI top headlines — US, English
+    const res  = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    if (data.status === 'ok' && data.items && data.items.length) {
-      headlines = data.items.slice(0, 5).map(item => item.title.replace(/ - [^-]+$/, ''));
-    } else if (NEWS_KEY) {
-      // Fallback: try NewsAPI if key provided (may be blocked in browser)
-      try {
-        const newsRes = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
-        const newsData = await newsRes.json();
-        if (newsData.articles && newsData.articles.length) {
-          headlines = newsData.articles.slice(0, 4).map(a => a.title);
-        }
-      } catch(e) { /* silent fail */ }
-    }
+    if (data.status !== 'ok' || !data.articles?.length) throw new Error('No articles returned');
 
-    if (!headlines.length) { speak("I couldn't pull the headlines right now, sir."); return; }
-
+    const headlines = data.articles.map(a => a.title).filter(Boolean).slice(0, 5);
     const headlineText = headlines.join('. Next: ');
-    const aiReply = await askOpenAIRaw(
-      `You are J.A.R.V.I.S. Summarize these news headlines in 2-3 sentences in your characteristic intelligent, concise style. Call the user sir.\n\nHeadlines: ${headlineText}`
-    );
-    addLog('jarvis', aiReply);
-    speak(aiReply);
+
+    // Use AI to present them naturally if we have a key, otherwise just read them
+    if (OPENAI_KEY) {
+      const prompt = `You are ${ASSISTANT_NAME}. Summarize these current news headlines in 3-4 conversational sentences in your intelligent, concise style. Don't list them — weave them into a brief briefing. Call the user sir.\n\nHeadlines: ${headlineText}`;
+      const reply = await askAIRaw(prompt, false);
+      addLog('jarvis', reply);
+      speak(reply);
+    } else {
+      const reply = 'Here are the top headlines, sir: ' + headlines.join('. ');
+      addLog('jarvis', reply);
+      speak(reply);
+    }
   } catch(err) {
-    speak('The news feed appears to be down, sir.');
+    // NewsAPI blocks browser requests in some plans — explain clearly
+    const msg = 'The news feed is unavailable right now, sir. Your NewsAPI key may require a paid plan for browser access, or the service may be temporarily down.';
+    addLog('jarvis', msg);
+    speak(msg);
   }
 }
 
-// Joke (JokeAPI — completely free, no key needed)
+// ── Jokes ─────────────────────────────────────────────────────────────────
 async function getJoke() {
+  setStatus('LOADING JOKE…', 'active');
   try {
-    setStatus('FETCHING JOKE…', 'active');
-    const res = await fetch('https://v2.jokeapi.dev/joke/Any?safe-mode&type=twopart');
+    const res  = await fetch('https://v2.jokeapi.dev/joke/Any?safe-mode&type=twopart');
     const data = await res.json();
     if (data.setup && data.delivery) {
-      addLog('jarvis', data.setup + ' ... ' + data.delivery);
+      const full = data.setup + ' ... ' + data.delivery;
+      addLog('jarvis', full);
       speak(data.setup);
-      setTimeout(() => speak(data.delivery), 3000);
+      setTimeout(() => speak(data.delivery), 3500);
     } else {
-      speak("My humor subroutines appear to be malfunctioning, sir.");
+      speak('My humor subroutines appear to be malfunctioning, sir.');
     }
   } catch(e) {
-    speak("I attempted humor, but something went wrong. Not unlike most of my social interactions, sir.");
+    speak('I attempted humor, sir, but something went wrong.');
   }
 }
 
-// ── OpenAI ───────────────────────────────────────────────────────────────
-async function askOpenAIRaw(prompt) {
+// ── AI ────────────────────────────────────────────────────────────────────
+async function askAIRaw(prompt, addToHistory = true) {
+  if (!OPENAI_KEY) return null;
+
+  const systemPrompt = `You are ${ASSISTANT_NAME}, a highly intelligent AI assistant in the style of Iron Man's J.A.R.V.I.S. You have continuous memory of this conversation — refer to earlier topics naturally when relevant. Be concise, slightly formal, and occasionally call the user sir. Avoid markdown, lists, or bullet points — you speak in natural sentences. If you end with a question, keep it to one question only.`;
+
+  const messages = [{ role: 'system', content: systemPrompt }, ...conversationHistory];
+  if (addToHistory) {
+    messages.push({ role: 'user', content: prompt });
+  } else {
+    messages.push({ role: 'user', content: prompt });
+  }
+
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+OPENAI_KEY },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini', max_tokens: 200,
-      messages: [
-        { role:'system', content:"You are J.A.R.V.I.S., Tony Stark's AI. Intelligent, calm, slightly sarcastic, concise. Occasionally call the user sir." },
-        { role:'user', content: prompt }
-      ]
-    })
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
+    body: JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 250, messages })
   });
-  if (!res.ok) throw new Error('HTTP '+res.status);
+
+  if (res.status === 429) throw new Error('quota');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+
   const data = await res.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  return text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#+\s/g,'').trim();
+  return (data.choices[0].message.content || '').replace(/\*\*/g,'').replace(/\*/g,'').replace(/#+\s/g,'').trim();
 }
 
-async function askOpenAI(prompt) {
+async function askAI(prompt) {
+  if (!OPENAI_KEY) { speak('Please connect your OpenAI API key in the settings menu, sir.'); return; }
   try {
-    const clean = await askOpenAIRaw(prompt);
-    addLog('jarvis', clean);
-    speak(clean);
+    conversationHistory.push({ role: 'user', content: prompt });
+    if (conversationHistory.length > MAX_HISTORY) {
+      conversationHistory = conversationHistory.slice(conversationHistory.length - MAX_HISTORY);
+    }
+
+    const reply = await askAIRaw(prompt, false); // history already pushed above
+    if (!reply) throw new Error('empty');
+
+    conversationHistory.push({ role: 'assistant', content: reply });
+    updateMemBadge();
+    addLog('jarvis', reply);
+    speak(reply);
   } catch(err) {
-    addLog('system','Error: '+err.message);
-    speak('I encountered an error, sir.');
-    setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active');
+    const msg = err.message === 'quota'
+      ? 'Your OpenAI quota appears to be exceeded, sir.'
+      : 'Connection error, sir. Please check your API key.';
+    addLog('system', msg);
+    speak(msg);
+    setOrbState('active'); setStatus('LISTENING FOR WAKE WORD', 'active');
   }
 }
 
-// ── TTS ──────────────────────────────────────────────────────────────────
+// ── TTS ───────────────────────────────────────────────────────────────────
 function speak(text) {
-  if (!window.speechSynthesis){addLog('system','TTS not supported.'); return;}
+  if (!window.speechSynthesis) { addLog('system', 'TTS not supported.'); return; }
   window.speechSynthesis.cancel();
-  isSpeaking=true;
-  if (recognition){try{recognition.stop();}catch(e){}}
+  isSpeaking = true;
+  if (recognition) { try { recognition.stop(); } catch(e){} }
   setOrbState('speaking');
-  setStatus('JARVIS SPEAKING…','speaking');
+  setStatus('SPEAKING…', 'speaking');
+
   currentUtterance = new SpeechSynthesisUtterance(text);
-  currentUtterance.rate=0.95; currentUtterance.pitch=0.85; currentUtterance.volume=1;
+  currentUtterance.rate = 0.95; currentUtterance.pitch = 0.85; currentUtterance.volume = 1;
   const voices = window.speechSynthesis.getVoices();
-  const pref = voices.find(v=>v.name.includes('Daniel')||v.name.includes('Google UK English Male')||v.name.includes('Microsoft David'));
-  if (pref) currentUtterance.voice=pref;
-  const done=()=>{
-    isSpeaking=false; currentUtterance=null;
-    if (isActive){setOrbState('active'); setStatus('LISTENING FOR WAKE WORD','active'); startRecognition();}
+  const pref = voices.find(v => v.name.includes('Daniel') || v.name.includes('Google UK English Male') || v.name.includes('Microsoft David'));
+  if (pref) currentUtterance.voice = pref;
+
+  const endsWithQ = text.trimEnd().endsWith('?');
+  const done = () => {
+    isSpeaking = false; currentUtterance = null;
+    if (!isActive) return;
+    if (endsWithQ) {
+      // Enter 5-second follow-up window
+      isConversing = true;
+      setOrbState('listening');
+      setStatus('FOLLOW UP… SPEAK NOW', 'listening');
+      startRecognition();
+      converseTimer = setTimeout(() => {
+        if (isConversing) {
+          isConversing = false;
+          setOrbState('active');
+          setStatus('LISTENING FOR WAKE WORD', 'active');
+        }
+      }, 5000);
+    } else {
+      setOrbState('active'); setStatus('LISTENING FOR WAKE WORD', 'active'); startRecognition();
+    }
   };
-  currentUtterance.onend=done; currentUtterance.onerror=done;
+  currentUtterance.onend = done; currentUtterance.onerror = done;
   window.speechSynthesis.speak(currentUtterance);
 }
 
-window.speechSynthesis.onvoiceschanged=()=>{};
-
-// ── Spotify Callback Handler (runs on page load if redirected back) ───────
-handleSpotifyCallback();
-
-// Restore spotify token if still valid
-(function restoreSpotify() {
-  const token = localStorage.getItem('spotify_token');
-  const expiry = localStorage.getItem('spotify_token_expiry');
-  const clientId = localStorage.getItem('jarvis_spotify_client_id');
-  if (token && expiry && clientId && Date.now() < parseInt(expiry)) {
-    SPOTIFY_TOKEN = token;
-    SPOTIFY_CLIENT_ID = clientId;
-    document.getElementById('spotifyClientInput').value = clientId.slice(0,4)+'••••'+clientId.slice(-4);
-    document.getElementById('spotifyStatus').textContent = '✓ Spotify session restored.';
-    document.getElementById('spotifyStatus').className = 'api-status spotify-ok';
-    document.getElementById('spotifyPlayer').classList.add('visible');
-    addLog('system','Spotify session restored.');
-    refreshSpotifyStatus();
-    setInterval(refreshSpotifyStatus, 10000);
-  }
-})();
+window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 </body>
 </html>
