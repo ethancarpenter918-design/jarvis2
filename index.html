@@ -6,6 +6,9 @@
 <title>J.A.R.V.I.S</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;500;600&family=Share+Tech+Mono&display=swap');
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.3/math.min.js"></script>
+<style>
 
 :root {
   --bg-deep:      #020810;
@@ -427,28 +430,31 @@ body::after {
 
     <div class="s-divider"></div>
 
-    <!-- News -->
+    <!-- Spotify -->
     <div class="s-section">
-      <div class="s-section-title">📰 News API</div>
+      <div class="s-section-title">🎵 Spotify</div>
       <div class="s-field">
-        <span class="s-label">NewsAPI Key</span>
+        <span class="s-label">Client ID</span>
+        <input class="s-input" id="spotifyClientId" placeholder="Your Spotify Client ID…" autocomplete="off" spellcheck="false"/>
+        <span class="s-label" style="margin-top:6px">Client Secret</span>
         <div class="s-row">
-          <input class="s-input" id="newsKeyInput" type="password" placeholder="Your key…" autocomplete="off" spellcheck="false"/>
-          <button class="s-btn green" onclick="saveNews()">Connect</button>
+          <input class="s-input" id="spotifyClientSecret" type="password" placeholder="Your Spotify Client Secret…" autocomplete="off" spellcheck="false"/>
+          <button class="s-btn green" onclick="saveSpotify()">Connect</button>
         </div>
-        <div class="s-status" id="newsStatus">Say "Jarvis, what's in the news?"</div>
-        <div class="s-hint">Free developer key at <a href="https://newsapi.org/register" target="_blank">newsapi.org</a></div>
+        <div class="s-status" id="spotifyStatus">Say "Jarvis, play Blinding Lights"</div>
+        <div class="s-hint">Create a free app at <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com</a>. Set redirect URI to this page's URL.</div>
       </div>
     </div>
 
     <div class="s-divider"></div>
 
-    <!-- Jokes -->
+    <!-- Built-in Features -->
     <div class="s-section">
-      <div class="s-section-title">😂 JokeAPI</div>
+      <div class="s-section-title">⚡ Built-in — No Key Needed</div>
       <div class="s-field">
-        <div class="s-status ok">✓ Always active — no key needed</div>
-        <div class="s-hint">Say "Jarvis, tell me a joke" anytime.</div>
+        <div class="s-status ok">✓ Calculator — "What is 144 divided by 12?"</div>
+        <div class="s-status ok" style="margin-top:6px">✓ Navigation — "Open YouTube" · "Search Google for…"</div>
+        <div class="s-status ok" style="margin-top:6px">✓ Jokes — "Tell me a joke"</div>
       </div>
     </div>
 
@@ -568,7 +574,10 @@ body::after {
 // ── State ─────────────────────────────────────────────────────────────────
 let OPENAI_KEY   = '';
 let WEATHER_KEY  = '';
-let NEWS_KEY     = '';
+let SPOTIFY_CLIENT_ID     = '';
+let SPOTIFY_CLIENT_SECRET = '';
+let SPOTIFY_TOKEN = '';
+let SPOTIFY_TOKEN_EXPIRY  = 0;
 let ASSISTANT_NAME = 'J.A.R.V.I.S';
 let conversationHistory = [];
 const MAX_HISTORY = 20;
@@ -576,6 +585,7 @@ const MAX_HISTORY = 20;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null, isActive = false, isAwake = false, isSpeaking = false, isConversing = false;
 let silenceTimer = null, converseTimer = null, currentUtterance = null;
+let restartPending = false; // guard against rapid restart loops
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
 const orbWrap  = document.getElementById('orbWrap');
@@ -620,14 +630,6 @@ function saveWeather() {
   WEATHER_KEY = k;
   setSettingStatus('weatherStatus', '✓ Connected — try "weather in London"', 'ok');
   addLog('system', 'Weather API connected.');
-}
-
-function saveNews() {
-  const k = document.getElementById('newsKeyInput').value.trim();
-  if (!k) { setSettingStatus('newsStatus', 'Please enter a key.', 'err'); return; }
-  NEWS_KEY = k;
-  setSettingStatus('newsStatus', '✓ Connected — try "what\'s in the news?"', 'ok');
-  addLog('system', 'News API connected.');
 }
 
 function setSettingStatus(id, msg, cls) {
@@ -689,6 +691,7 @@ function startListening() {
 
 function stopAll() {
   isActive = false; isAwake = false; isSpeaking = false; isConversing = false;
+  restartPending = false;
   if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
   if (currentUtterance) { window.speechSynthesis.cancel(); currentUtterance = null; }
   if (silenceTimer)  { clearTimeout(silenceTimer);  silenceTimer = null; }
@@ -700,17 +703,40 @@ function stopAll() {
 }
 
 function startRecognition() {
-  if (!isActive) return;
-  if (recognition) { try { recognition.stop(); } catch(e){} }
-  recognition = new SpeechRecognition();
-  recognition.continuous = true; recognition.interimResults = false; recognition.lang = 'en-US';
-  recognition.onresult = e => handleTranscript(e.results[0][0].transcript.trim());
-  recognition.onerror = e => {
-    if (e.error === 'not-allowed') { addLog('system', 'Mic access denied.'); setStatus('MIC DENIED', 'error'); stopAll(); return; }
-    if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 300);
-  };
-  recognition.onend = () => { if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 200); };
-  try { recognition.start(); } catch(e) {}
+  if (!isActive || restartPending) return;
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+
+  restartPending = true;
+  setTimeout(() => {
+    restartPending = false;
+    if (!isActive || isSpeaking) return;
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = e => {
+      const last = e.results[e.results.length - 1];
+      if (last.isFinal) handleTranscript(last[0].transcript.trim());
+    };
+
+    recognition.onerror = e => {
+      if (e.error === 'not-allowed') {
+        addLog('system', 'Mic access denied.');
+        setStatus('MIC DENIED', 'error');
+        stopAll();
+        return;
+      }
+      if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 800);
+    };
+
+    recognition.onend = () => {
+      if (isActive && !isSpeaking) setTimeout(() => startRecognition(), 600);
+    };
+
+    try { recognition.start(); } catch(e) {}
+  }, 150);
 }
 
 // ── Transcript router ─────────────────────────────────────────────────────
@@ -766,11 +792,19 @@ function handleTranscript(text) {
 function routeCommand(lower, original) {
   const jokeTriggers    = ['joke', 'funny', 'make me laugh', 'tell me something funny'];
   const weatherTriggers = ['weather', 'temperature', 'forecast', 'rain', 'humid', 'wind', 'sunny', 'cloudy'];
-  const newsTriggers    = ['news', 'headlines', 'what\'s happening', 'latest', 'current events'];
+  const mathTriggers    = ['what is', 'calculate', 'compute', 'how much is', 'what\'s', 'equals', 'solve', 'plus', 'minus', 'times', 'divided by', 'percent', 'square root', 'power of', 'factorial'];
+  const navTriggers     = ['open ', 'go to ', 'navigate to ', 'launch ', 'take me to '];
+  const searchTriggers  = ['search google for', 'google ', 'search for ', 'look up ', 'search youtube for', 'youtube search'];
+  const spotifyTriggers = ['play ', 'put on ', 'play me ', 'listen to '];
 
-  if (jokeTriggers.some(t => lower.includes(t)))    { getJoke(); return; }
-  if (weatherTriggers.some(t => lower.includes(t))) { getWeather(lower); return; }
-  if (newsTriggers.some(t => lower.includes(t)))    { getNews(); return; }
+  if (jokeTriggers.some(t => lower.includes(t)))         { getJoke(); return; }
+  if (weatherTriggers.some(t => lower.includes(t)))      { getWeather(lower); return; }
+  if (spotifyTriggers.some(t => lower.startsWith(t)) ||
+      lower.includes('play some') || lower.includes('play a song'))
+                                                          { playSpotify(lower); return; }
+  if (navTriggers.some(t => lower.startsWith(t)))        { handleNavigation(lower); return; }
+  if (searchTriggers.some(t => lower.includes(t)))       { handleSearch(lower); return; }
+  if (mathTriggers.some(t => lower.includes(t)))         { handleMath(lower, original); return; }
   askAI(original);
 }
 
@@ -821,39 +855,178 @@ async function getWeather(lower) {
   }
 }
 
-// ── News ──────────────────────────────────────────────────────────────────
-async function getNews() {
-  if (!NEWS_KEY) {
-    speak('I need a NewsAPI key first, sir. Please add it in the settings menu.');
+// ── Calculator / Math ─────────────────────────────────────────────────────
+function handleMath(lower, original) {
+  // Strip filler words, then normalise spoken math to mathjs-parseable form
+  let expr = lower
+    .replace(/^(what(?:'s| is)|calculate|compute|how much is|solve)\s*/i, '')
+    .replace(/\?$/, '')
+    .replace(/\bsquare root of\b/g, 'sqrt(')
+    .replace(/\bsquared\b/g, '^2')
+    .replace(/\bcubed\b/g, '^3')
+    .replace(/\bto the power of\b/g, '^')
+    .replace(/\btimes\b/g, '*')
+    .replace(/\bdivided by\b/g, '/')
+    .replace(/\bplus\b/g, '+')
+    .replace(/\bminus\b/g, '-')
+    .replace(/\bpercent\b/g, '/100')
+    .replace(/\bfactorial of (\d+)\b/g, 'factorial($1)')
+    .replace(/\bpi\b/g, 'pi')
+    .trim();
+
+  // Close any dangling sqrt(
+  const openParens = (expr.match(/\(/g)||[]).length - (expr.match(/\)/g)||[]).length;
+  for (let i = 0; i < openParens; i++) expr += ')';
+
+  try {
+    const result = math.evaluate(expr);
+    const rounded = typeof result === 'number' ? parseFloat(result.toPrecision(10)) : result;
+    const reply = `The result is ${rounded}, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
+  } catch(e) {
+    // Fall through to AI if mathjs can't parse it
+    askAI(original);
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+const NAV_SITES = {
+  youtube:   'https://www.youtube.com',
+  google:    'https://www.google.com',
+  gmail:     'https://mail.google.com',
+  github:    'https://www.github.com',
+  twitter:   'https://www.twitter.com',
+  x:         'https://www.x.com',
+  reddit:    'https://www.reddit.com',
+  netflix:   'https://www.netflix.com',
+  spotify:   'https://open.spotify.com',
+  amazon:    'https://www.amazon.com',
+  wikipedia:  'https://www.wikipedia.org',
+  maps:      'https://maps.google.com',
+  facebook:  'https://www.facebook.com',
+  instagram: 'https://www.instagram.com',
+  linkedin:  'https://www.linkedin.com',
+  twitch:    'https://www.twitch.tv',
+  discord:   'https://discord.com',
+  chatgpt:   'https://chat.openai.com',
+  claude:    'https://claude.ai',
+};
+
+function handleNavigation(lower) {
+  const stripped = lower
+    .replace(/^(open|go to|navigate to|launch|take me to)\s+/i, '')
+    .trim();
+
+  // Check known sites
+  for (const [key, url] of Object.entries(NAV_SITES)) {
+    if (stripped.includes(key)) {
+      const reply = `Opening ${key.charAt(0).toUpperCase() + key.slice(1)}, sir.`;
+      addLog('jarvis', reply);
+      speak(reply);
+      setTimeout(() => window.open(url, '_blank'), 800);
+      return;
+    }
+  }
+
+  // Try to open as a URL/domain
+  const guessedUrl = stripped.includes('.') ? 'https://' + stripped : 'https://' + stripped + '.com';
+  const siteName = stripped;
+  const reply = `Navigating to ${siteName}, sir.`;
+  addLog('jarvis', reply);
+  speak(reply);
+  setTimeout(() => window.open(guessedUrl, '_blank'), 800);
+}
+
+function handleSearch(lower) {
+  const youtubeSearch = lower.match(/(?:search youtube for|youtube search(?:\s+for)?)\s+(.+)/i);
+  const googleSearch  = lower.match(/(?:search(?:\s+google)?(?:\s+for)?|google|look up)\s+(.+)/i);
+
+  if (youtubeSearch) {
+    const q = youtubeSearch[1].trim();
+    const reply = `Searching YouTube for ${q}, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
+    setTimeout(() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`, '_blank'), 800);
+  } else if (googleSearch) {
+    const q = googleSearch[1].trim();
+    const reply = `Searching Google for ${q}, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
+    setTimeout(() => window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank'), 800);
+  } else {
+    askAI(lower);
+  }
+}
+
+// ── Spotify ───────────────────────────────────────────────────────────────
+function saveSpotify() {
+  const id  = document.getElementById('spotifyClientId').value.trim();
+  const sec = document.getElementById('spotifyClientSecret').value.trim();
+  if (!id || !sec) { setSettingStatus('spotifyStatus', 'Enter both Client ID and Secret.', 'err'); return; }
+  SPOTIFY_CLIENT_ID     = id;
+  SPOTIFY_CLIENT_SECRET = sec;
+  setSettingStatus('spotifyStatus', '✓ Credentials saved — try "play Bohemian Rhapsody"', 'ok');
+  addLog('system', 'Spotify credentials saved.');
+}
+
+async function getSpotifyToken() {
+  if (SPOTIFY_TOKEN && Date.now() < SPOTIFY_TOKEN_EXPIRY) return SPOTIFY_TOKEN;
+  const creds = btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`);
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Authorization': 'Basic ' + creds, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials'
+  });
+  if (!res.ok) throw new Error('Token fetch failed');
+  const data = await res.json();
+  SPOTIFY_TOKEN = data.access_token;
+  SPOTIFY_TOKEN_EXPIRY = Date.now() + (data.expires_in - 30) * 1000;
+  return SPOTIFY_TOKEN;
+}
+
+async function playSpotify(lower) {
+  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
+    speak('I need your Spotify credentials first, sir. Please add them in the settings menu.');
     return;
   }
 
-  setStatus('FETCHING NEWS…', 'active');
+  // Extract what to play
+  let query = lower
+    .replace(/^(play me|put on|play|listen to)\s+/i, '')
+    .replace(/\bon spotify\b/i, '')
+    .trim();
+
+  if (!query || query.length < 2) {
+    speak('What would you like me to play, sir?');
+    return;
+  }
+
+  setStatus('SEARCHING SPOTIFY…', 'active');
   try {
-    // NewsAPI top headlines — US, English
-    const res  = await fetch(`https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${NEWS_KEY}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const token = await getSpotifyToken();
+    const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('Search failed');
     const data = await res.json();
+    const track = data.tracks?.items?.[0];
 
-    if (data.status !== 'ok' || !data.articles?.length) throw new Error('No articles returned');
-
-    const headlines = data.articles.map(a => a.title).filter(Boolean).slice(0, 5);
-    const headlineText = headlines.join('. Next: ');
-
-    // Use AI to present them naturally if we have a key, otherwise just read them
-    if (OPENAI_KEY) {
-      const prompt = `You are ${ASSISTANT_NAME}. Summarize these current news headlines in 3-4 conversational sentences in your intelligent, concise style. Don't list them — weave them into a brief briefing. Call the user sir.\n\nHeadlines: ${headlineText}`;
-      const reply = await askAIRaw(prompt, false);
-      addLog('jarvis', reply);
-      speak(reply);
-    } else {
-      const reply = 'Here are the top headlines, sir: ' + headlines.join('. ');
-      addLog('jarvis', reply);
-      speak(reply);
+    if (!track) {
+      speak(`I couldn't find a track matching "${query}", sir. Try a different search.`);
+      return;
     }
+
+    const trackName = track.name;
+    const artist    = track.artists.map(a => a.name).join(', ');
+    const spotifyUrl = track.external_urls.spotify;
+
+    const reply = `Playing ${trackName} by ${artist} on Spotify, sir.`;
+    addLog('jarvis', reply);
+    speak(reply);
+    setTimeout(() => window.open(spotifyUrl, '_blank'), 800);
   } catch(err) {
-    // NewsAPI blocks browser requests in some plans — explain clearly
-    const msg = 'The news feed is unavailable right now, sir. Your NewsAPI key may require a paid plan for browser access, or the service may be temporarily down.';
+    const msg = 'Unable to reach Spotify, sir. Please verify your credentials in settings.';
     addLog('jarvis', msg);
     speak(msg);
   }
